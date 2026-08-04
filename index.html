@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>刘彦君 · 个人主页</title>
+  <meta name="description" content="刘彦君的个人主页：关于我、技能、作品、文章与联系方式。" />
+  <meta name="theme-color" content="#fafafa" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='42' fill='%23e23636'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到主要内容</a>
+  <div class="progress-bar" id="progressBar" aria-hidden="true"></div>
+
+  <!-- ================= 顶部导航 ================= -->
+  <header class="site-header" id="siteHeader">
+    <div class="container nav-wrap">
+      <a href="#top" class="logo"><span id="logo-text">刘彦君</span><span class="logo-dot">.</span></a>
+      <button class="nav-toggle" id="navToggle" aria-label="打开菜单" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+      <nav class="site-nav" id="siteNav" aria-label="主导航">
+        <ul>
+          <li><a href="#about" class="nav-link active">关于</a></li>
+          <li><a href="#journey" class="nav-link">经历</a></li>
+          <li><a href="#skills" class="nav-link">技能</a></li>
+          <li><a href="#projects" class="nav-link">作品</a></li>
+          <li><a href="#blog" class="nav-link">文章</a></li>
+          <li><a href="#contact" class="nav-link">联系</a></li>
+          <li><a href="#guestbook" class="nav-link">留言</a></li>
+        </ul>
+      </nav>
+      <button class="search-btn" id="searchBtn" aria-label="搜索" title="搜索（Ctrl+K）">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main id="main">
+
+    <!-- ================= 首屏 Hero ================= -->
+    <section class="hero" id="top">
+      <div class="hero-bg-glow" aria-hidden="true"></div>
+      <canvas id="particles" aria-hidden="true"></canvas>
+      <div class="container hero-content">
+        <p class="hero-greeting reveal" id="hero-greeting">你好，我是 刘彦君</p>
+        <h1 class="hero-name reveal" id="hero-name">用代码与热爱，探索更大的世界。</h1>
+        <p class="hero-sub reveal" id="hero-sub">Remember, with great power comes great responsibility.</p>
+        <div class="hero-roles reveal" aria-live="polite">
+          <span class="typed" id="typewriter"></span><span class="type-caret">|</span>
+        </div>
+        <div class="hero-actions reveal">
+          <a href="#projects" class="btn btn-primary">查看作品</a>
+          <a href="#contact" class="btn btn-ghost">联系我</a>
+        </div>
+      </div>
+      <a href="#about" class="scroll-hint" aria-label="向下滚动">
+        <span class="mouse"><span class="wheel"></span></span>
+      </a>
+    </section>
+
+    <!-- ================= 关于我 ================= -->
+    <section class="section" id="about">
+      <div class="container">
+        <div class="section-head reveal">
+          <h2 id="head-about-title">关于我</h2>
+          <p class="section-sub" id="head-about-sub"></p>
+        </div>
+        <div class="about-grid">
+          <!-- 头像：照片位于 avatars/avatar.jpg，替换该文件即可更新头像 -->
+          <div class="about-avatar reveal">
+            <div class="avatar-wrap">
+              <div class="avatar">
+                <img src="avatars/avatar.jpg" alt="刘彦君的头像" />
+              </div>
+            </div>
+          </div>
+          <div class="about-text reveal">
+            <div id="about-paragraphs"></div>
+            <div class="about-stats" id="about-stats"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 我的经历 ================= -->
+    <section class="section section-alt" id="journey">
+      <div class="container">
+        <div class="section-head reveal">
+          <h2 id="head-journey-title">我的经历</h2>
+          <p class="section-sub" id="head-journey-sub"></p>
+        </div>
+        <div class="timeline" id="timeline"></div>
+      </div>
+    </section>
+
+    <!-- ================= 技能 ================= -->
+    <section class="section" id="skills">
+      <div class="container">
+        <div class="section-head reveal">
+          <h2 id="head-skills-title">技能</h2>
+          <p class="section-sub" id="head-skills-sub"></p>
+        </div>
+        <div class="skills-wrap">
+          <div class="skill-bars reveal" id="skill-bars"></div>
+          <div class="skill-tags reveal">
+            <h3 id="skills-heading">常用工具与语言</h3>
+            <div class="tags" id="skill-tags"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 兴趣爱好 ================= -->
+    <section class="section section-alt" id="interests">
+      <div class="container">
+        <div class="section-head reveal">
+          <h2 id="head-interests-title">兴趣爱好</h2>
+          <p class="section-sub" id="head-interests-sub"></p>
+        </div>
+        <div class="interests-grid stagger" id="interests-grid"></div>
+      </div>
+    </section>
+
+    <!-- ================= 作品 ================= -->
+    <section class="section" id="projects">
+      <div class="container">
+        <div class="section-head reveal">
+          <h2 id="head-projects-title">个人作品</h2>
+          <p class="section-sub" id="head-projects-sub"></p>
+        </div>
+        <div class="works-filter reveal" id="work-tabs"></div>
+        <div class="projects-grid stagger" id="works-grid"></div>
+      </div>
+    </section>
+
+    <!-- ================= 生活瞬间 ================= -->
+    <section class="section section-alt" id="gallery">
+      <div class="container">
+        <div class="section-head reveal">
+          <h2 id="head-gallery-title">生活瞬间</h2>
+          <p class="section-sub" id="head-gallery-sub"></p>
+        </div>
+        <div class="gallery-grid stagger" id="gallery-grid"></div>
+      </div>
+    </section>
+
+    <!-- ================= 文章 ================= -->
+    <section class="section" id="blog">
+      <div class="container">
+        <div class="section-head reveal">
+          <h2 id="head-blog-title">最近文章</h2>
+          <p class="section-sub" id="head-blog-sub"></p>
+        </div>
+        <div class="blog-grid stagger" id="blog-grid"></div>
+      </div>
+    </section>
+
+    <!-- ================= 联系 ================= -->
+    <section class="section section-alt" id="contact">
+      <div class="container">
+        <div class="section-head reveal">
+          <h2 id="head-contact-title">联系我</h2>
+          <p class="section-sub" id="head-contact-sub"></p>
+        </div>
+        <div class="contact-grid">
+          <div class="contact-intro reveal">
+            <p>如果你对我的作品感兴趣，或者想一起合作做点有意思的事，欢迎随时联系我！</p>
+          </div>
+          <div class="contact-cards reveal" id="contact-cards"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 留言板 ================= -->
+    <section class="section" id="guestbook">
+      <div class="container">
+        <div class="section-head reveal">
+          <h2 id="head-guestbook-title">留言板</h2>
+          <p class="section-sub" id="head-guestbook-sub"></p>
+        </div>
+        <div class="guestbook-wrap reveal">
+          <p class="guestbook-note">评论由 GitHub Discussions 提供支持，需登录 GitHub 账号后留言。首次使用请在下方登录。</p>
+          <div id="giscus"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 站内搜索弹窗 -->
+  <div class="search-modal" id="searchModal" aria-hidden="true">
+    <div class="search-box" role="dialog" aria-label="站内搜索">
+      <div class="search-input-wrap">
+        <input type="text" id="searchInput" placeholder="搜索作品、文章…（Ctrl+K）" autocomplete="off" />
+        <button class="search-close" id="searchClose" aria-label="关闭">×</button>
+      </div>
+      <div class="search-results" id="searchResults"></div>
+      <p class="search-hint">Enter 打开第一条结果 · Esc 关闭</p>
+    </div>
+  </div>
+
+  <!-- ================= 页脚 ================= -->
+  <footer class="site-footer">
+    <div class="container footer-wrap">
+      <p>© <span id="year">2026</span> <span id="footer-name">刘彦君</span> · 用 ❤ 和 ☕ 构建</p>
+      <p class="site-stats">
+        <span id="busuanzi_container_site_pv">本站访问量 <span id="busuanzi_value_site_pv"></span> 次</span>
+        ·
+        <span id="busuanzi_container_site_uv">访客 <span id="busuanzi_value_site_uv"></span> 人</span>
+      </p>
+      <button class="to-top" id="toTop" aria-label="回到顶部">↑</button>
+    </div>
+  </footer>
+
+  <!-- 留言板：GitHub Discussions 评论 -->
+  <script src="https://giscus.app/client.js"
+    data-repo="ldygml/website-guestbook"
+    data-repo-id="R_kgDOTttJ2w"
+    data-category="General"
+    data-category-id="DIC_kwDOTttJ284DCp6D"
+    data-mapping="pathname"
+    data-strict="0"
+    data-reactions-enabled="1"
+    data-emit-metadata="0"
+    data-input-position="bottom"
+    data-theme="light"
+    data-lang="zh-CN"
+    crossorigin="anonymous"
+    async>
+  </script>
+
+  <!-- 访客统计 -->
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  <script src="js/content.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
