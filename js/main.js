@@ -95,6 +95,18 @@
     catCounters[p.category] = (catCounters[p.category] || 0) + 1;
     const num = catCounters[p.category];
     const isCode = p.category === '编程';
+    const demo = p.demo || '';
+    let mediaHtml = '';
+    if (!isCode && demo) {
+      const dl = demo.toLowerCase();
+      if (/\.(mp3|m4a|wav|ogg|aac)$/.test(dl)) {
+        mediaHtml = '<audio class="work-media" controls preload="metadata" src="' + demo + '"></audio>';
+      } else if (/\.(mp4|webm|mov|m4v)$/.test(dl)) {
+        mediaHtml = '<video class="work-media" controls preload="metadata" src="' + demo + '"></video>';
+      } else if (/\.(jpe?g|png|gif|webp)$/.test(dl)) {
+        mediaHtml = '<img class="work-media" src="' + demo + '" alt="' + p.title + '" loading="lazy" />';
+      }
+    }
     const links = isCode
       ? '<a href="' + (p.source || '#') + '" class="link">查看源码 →</a><a href="' + (p.demo || '#') + '" class="link">在线预览 →</a>'
       : '<a href="' + (p.source || p.demo || '#') + '" class="link">查看作品 →</a>';
@@ -107,6 +119,7 @@
         '<h3>' + p.title + '</h3>' +
         '<p>' + p.desc + '</p>' +
         '<div class="project-tags">' + p.tags.map((t) => '<span>' + t + '</span>').join('') + '</div>' +
+        mediaHtml +
         '<div class="project-links">' + links + '</div>' +
       '</div>' +
     '</article>';
