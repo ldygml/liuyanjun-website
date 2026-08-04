@@ -142,6 +142,16 @@
     <div class="notice">
       <strong>使用说明：</strong>编辑下方表单修改网站内容。电脑端：点“保存到网站”写入本地 <code>js/content.js</code>，再双击 <code>更新线上.bat</code> 发布；手机端：直接打开本页线上地址（<code>https://ldygml.github.io/liuyanjun-website/admin.html</code>），填好下方任一发布配置后，点“保存并发布到线上”即可。建议先点“导出 JSON 备份”留个底。
     </div>
+    <input type="file" id="photoFile" accept="image/*" style="display:none" />
+    <section class="card">
+      <h2><span class="dot">●</span>照片上传</h2>
+      <p class="card-desc">在手机上选照片，自动压缩后上传到线上仓库。上传后需要“保存并发布到线上”才会在网站生效（发布前请先在 GitHub 直连发布里保存过令牌）。</p>
+      <div class="field">
+        <button class="btn primary" id="btn-upload-avatar">上传头像（替换 avatars/avatar.jpg）</button>
+        <span id="avatar-status"></span>
+      </div>
+      <p class="card-desc" style="margin-top:10px;">相册照片：在下方“生活瞬间（相册）”的每条照片右侧点“上传”，会自动填好图片路径。</p>
+    </section>
     <section class="card">
       <h2><span class="dot">●</span>GitHub 直连发布（推荐）</h2>
       <p class="card-desc">不依赖 Vercel，直接通过 GitHub API 更新线上仓库（api.github.com 国内访问稳定）。需要创建一个只允许读写 liuyanjun-website 仓库内容文件的受限令牌。</p>
@@ -257,7 +267,7 @@
         { title: '生活瞬间（相册）', desc: '图片路径填 assets/gallery/ 下的文件；留空显示占位', fields: [
           { path: 'gallery', label: '照片', type: 'objectList', itemFields: [
             { path: 'title', label: '标题' },
-            { path: 'img', label: '图片路径' }
+            { path: 'img', label: '图片路径（可上传）', type: 'photoUpload' }
           ]}
         ]},
         { title: '联系方式', desc: '邮箱可加多个；微信留空自动隐藏', fields: [
@@ -398,6 +408,26 @@
                 item[f.path] = ci.value.split(/[,，;；]/).map(function (s) { return s.trim(); }).filter(Boolean);
               });
               card.appendChild(ci);
+            } else if (f.type === 'photoUpload') {
+              var pi = el('input');
+              pi.type = 'text';
+              pi.value = item[f.path] || '';
+              pi.style.minWidth = '180px';
+              pi.addEventListener('input', function () { item[f.path] = pi.value; });
+              var pb = el('button', 'btn', '上传');
+              pb.style.padding = '6px 12px';
+              pb.addEventListener('click', function () {
+                pickPhoto(function (b64, name) {
+                  uploadToRepo('assets/gallery/' + name, b64, function (err, path) {
+                    if (err) { alert('上传失败: ' + err); return; }
+                    item[f.path] = path;
+                    pi.value = path;
+                    alert('照片已上传 ✓ 记得点“保存并发布到线上”生效');
+                  });
+                });
+              });
+              card.appendChild(pi);
+              card.appendChild(pb);
             } else {
               var input = el('input');
               input.type = 'text';
@@ -619,6 +649,103 @@
           ghStatus.textContent = '无法连接: ' + e.message;
           ghStatus.style.color = '#c92f2f';
         }
+      });
+
+      /* ---------- 照片上传 ---------- */
+      var photoFile = document.getElementById('photoFile');
+      var pendingPhoto = null;
+
+      function pickPhoto(callback) {
+        pendingPhoto = callback;
+        photoFile.value = '';
+        photoFile.click();
+      }
+      photoFile.addEventListener('change', function () {
+        var file = photoFile.files && photoFile.files[0];
+        if (!file || !pendingPhoto) return;
+        var cb = pendingPhoto;
+        pendingPhoto = null;
+        var reader = new FileReader();
+        reader.onload = function () {
+          var imgEl = new Image();
+          imgEl.onload = function () {
+            var max = 1600;
+            var scale = Math.min(1, max / Math.max(imgEl.width, imgEl.height));
+            var canvas = document.createElement('canvas');
+            canvas.width = Math.round(imgEl.width * scale);
+            canvas.height = Math.round(imgEl.height * scale);
+            canvas.getContext('2d').drawImage(imgEl, 0, 0, canvas.width, canvas.height);
+            var b64 = canvas.toDataURL('image/jpeg', 0.82).split(',')[1];
+            var name = 'gallery-' + Date.now() + '.jpg';
+            cb(b64, name);
+          };
+          imgEl.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+      });
+
+      function getGhToken() {
+        try {
+          var cfg = JSON.parse(localStorage.getItem('ghAdminCfg') || '{}');
+          if (cfg.token) return cfg.token;
+        } catch (e) { /* ignore */ }
+        return document.getElementById('ghToken').value.trim();
+      }
+      function uploadToRepo(path, b64, callback) {
+        var token = getGhToken();
+        if (!token) { callback('请先在 GitHub 直连发布里填写并保存令牌', null); return; }
+        var repo = 'ldygml/liuyanjun-website';
+        var headers = {
+          Authorization: 'Bearer ' + token,
+          Accept: 'application/vnd.github+json',
+          'User-Agent': 'site-admin'
+        };
+        (async function () {
+          try {
+            var sha = '';
+            var getRes = await fetch('https://api.github.com/repos/' + repo + '/contents/' + path, {
+              headers: { Authorization: headers.Authorization, Accept: headers.Accept, 'User-Agent': headers['User-Agent'] }
+            });
+            if (getRes.status === 200) {
+              sha = (await getRes.json()).sha;
+            } else if (getRes.status !== 404) {
+              callback('无法读取仓库文件 (' + getRes.status + ')', null);
+              return;
+            }
+            var payload = { message: 'upload photo', content: b64, branch: 'main' };
+            if (sha) payload.sha = sha;
+            var putRes = await fetch('https://api.github.com/repos/' + repo + '/contents/' + path, {
+              method: 'PUT',
+              headers: { Authorization: headers.Authorization, Accept: headers.Accept, 'User-Agent': headers['User-Agent'], 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+            var putJson = await putRes.json();
+            if (putRes.ok) {
+              callback(null, path);
+            } else {
+              callback(putJson.message || putRes.status, null);
+            }
+          } catch (e) {
+            callback(e.message, null);
+          }
+        })();
+      }
+
+      document.getElementById('btn-upload-avatar').addEventListener('click', function () {
+        var st = document.getElementById('avatar-status');
+        pickPhoto(function (b64) {
+          st.textContent = '上传中...';
+          st.style.color = '#66707c';
+          uploadToRepo('avatars/avatar.jpg', b64, function (err) {
+            if (err) {
+              st.textContent = '上传失败: ' + err;
+              st.style.color = '#c92f2f';
+            } else {
+              st.textContent = '头像已上传 ✓ 发布后线上头像更新';
+              st.style.color = '#1d7a3f';
+            }
+          });
+        });
       });
 
       /* 测试钩子：用于自动化验证生成内容 */
