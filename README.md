@@ -52,3 +52,13 @@ python -m http.server 8000
 - **GitHub Pages**：推到仓库后开启 Pages 功能，在设置中绑定你的域名。
 
 购买域名后，到域名服务商的控制台，把域名解析到托管平台提供的地址（一般是添加一条 CNAME 或 A 记录），等解析生效即可用域名访问。
+
+## 更新线上内容（重要）
+
+网站已部署到 GitHub Pages（https://ldygml.github.io/liuyanjun-website/）。
+
+1. 打开 `admin.html` 后台管理页面修改内容，点“保存到网站”（写入本地 `js/content.js`）。
+2. 双击 `更新线上.bat` 一键发布：脚本会自动把本地网站文件同步到线上仓库并推送。
+3. 等待约 1 分钟，GitHub Pages 自动构建完成，刷新线上页面即可看到更新。
+
+注意：`admin.html` 和 `更新线上.bat` 只在你本地使用，不会上传到线上。
