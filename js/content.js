@@ -158,16 +158,20 @@ const SITE = {
       "img": "assets/gallery/gallery-1785856461443.jpg"
     },
     {
-      "title": "生活瞬间",
-      "img": ""
+      "title": "蜘蛛侠",
+      "img": "assets/gallery/gallery-1785858616653.jpg"
     },
     {
-      "title": "生活瞬间",
-      "img": ""
+      "title": "格里兹曼",
+      "img": "assets/gallery/gallery-1785858635719.jpg"
     },
     {
-      "title": "生活瞬间",
-      "img": ""
+      "title": "柯南",
+      "img": "assets/gallery/gallery-1785858649992.jpg"
+    },
+    {
+      "title": "格温",
+      "img": "assets/gallery/gallery-1785858678467.jpg"
     }
   ],
   "workCategories": [
