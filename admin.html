@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>网站后台管理</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #f7f7f2;
+      color: #1f2933;
+      font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", -apple-system, "Segoe UI", sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid #e3e3d9;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .topbar h1 { font-size: 18px; margin: 0; font-weight: 700; }
+    .topbar h1 span { color: #e23636; }
+    .actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    #status { font-size: 13px; color: #66707c; }
+    .btn {
+      border: 1px solid #e3e3d9;
+      background: #fff;
+      color: #1f2933;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all .2s;
+    }
+    .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(20,20,40,.08); }
+    .btn.primary { background: #e23636; border-color: #e23636; color: #fff; }
+    .btn.primary:hover { background: #c92f2f; }
+    main { max-width: 920px; margin: 0 auto; padding: 28px 24px 80px; }
+    .notice {
+      background: #fff7e6;
+      border: 1px solid #f0dcae;
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      font-size: 13px;
+      color: #6b5315;
+    }
+    .card {
+      background: #fff;
+      border: 1px solid #e3e3d9;
+      border-radius: 12px;
+      padding: 20px 22px;
+      margin-bottom: 18px;
+      box-shadow: 0 1px 4px rgba(20, 20, 40, .04);
+    }
+    .card h2 {
+      margin: 0 0 4px;
+      font-size: 16px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card h2 .dot { color: #e23636; }
+    .card .card-desc { color: #66707c; font-size: 12px; margin: 0 0 14px; }
+    .field { margin-bottom: 14px; }
+    .field > label { display: block; font-size: 12px; font-weight: 600; color: #66707c; margin-bottom: 5px; }
+    input[type="text"], input[type="number"], select, textarea {
+      width: 100%;
+      border: 1px solid #d9d9cf;
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 13px;
+      font-family: inherit;
+      color: #1f2933;
+      background: #fff;
+    }
+    input:focus, select:focus, textarea:focus { outline: 2px solid rgba(226, 54, 54, .25); border-color: #e23636; }
+    textarea { resize: vertical; min-height: 60px; }
+    .list-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .list-row input[type="text"], .list-row input[type="number"], .list-row select { flex: 1; min-width: 120px; }
+    .list-row textarea { flex: 2; min-width: 200px; }
+    .list-row .row-label { font-size: 11px; color: #66707c; min-width: 44px; }
+    .del {
+      border: none;
+      background: #fdecec;
+      color: #c92f2f;
+      border-radius: 7px;
+      padding: 6px 10px;
+      font-size: 12px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .del:hover { background: #fbd4d4; }
+    .add {
+      border: 1px dashed #c9c9bf;
+      background: transparent;
+      color: #66707c;
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .add:hover { border-color: #e23636; color: #e23636; }
+    .map-key { font-size: 11px; font-weight: 700; color: #2b5baa; min-width: 74px; }
+    @media (max-width: 600px) {
+      main { padding: 20px 14px 60px; }
+      .topbar { padding: 10px 14px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <h1>个人网站 <span>后台管理</span></h1>
+    <div class="actions">
+      <span id="status"></span>
+      <button class="btn" id="btn-export">导出 JSON 备份</button>
+      <button class="btn primary" id="btn-save">保存到网站</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="notice">
+      <strong>使用说明：</strong>编辑下方表单修改网站内容。电脑端：点“保存到网站”写入本地 <code>js/content.js</code>，再双击 <code>更新线上.bat</code> 发布；手机端：直接打开本页线上地址（<code>https://ldygml.github.io/liuyanjun-website/admin.html</code>），填好下方任一发布配置后，点“保存并发布到线上”即可。建议先点“导出 JSON 备份”留个底。
+    </div>
+    <section class="card">
+      <h2><span class="dot">●</span>GitHub 直连发布（推荐）</h2>
+      <p class="card-desc">不依赖 Vercel，直接通过 GitHub API 更新线上仓库（api.github.com 国内访问稳定）。需要创建一个只允许读写 liuyanjun-website 仓库内容文件的受限令牌。</p>
+      <div class="field">
+        <label>GitHub 令牌（Fine-grained PAT）</label>
+        <input type="password" id="ghToken" placeholder="github_pat_..." />
+      </div>
+      <div class="field">
+        <label>仓库</label>
+        <input type="text" id="ghRepo" value="ldygml/liuyanjun-website" />
+      </div>
+      <div class="field">
+        <button class="btn" id="btn-save-gh">保存设置</button>
+        <button class="btn primary" id="btn-publish-gh">保存并发布到线上</button>
+        <span id="gh-status"></span>
+      </div>
+    </section>
+    <section class="card">
+      <h2><span class="dot">●</span>Vercel API 发布（备选）</h2>
+      <p class="card-desc">通过自建后台接口发布。需要先部署 admin-api 到 Vercel 并填写 API 地址和密码，部署方法见 admin-api 仓库的 README。</p>
+      <div class="field">
+        <label>API 地址</label>
+        <input type="text" id="remoteUrl" placeholder="https://your-project.vercel.app/api/save" />
+      </div>
+      <div class="field">
+        <label>密码</label>
+        <input type="password" id="remotePass" placeholder="后台密码" />
+      </div>
+      <div class="field">
+        <button class="btn" id="btn-save-remote-config">保存设置</button>
+        <button class="btn primary" id="btn-publish-remote">保存并发布到线上</button>
+        <span id="remote-status"></span>
+      </div>
+    </section>
+    <div id="app"></div>
+  </main>
+
+  <script src="js/content.js"></script>
+  <script>
+    (function () {
+      'use strict';
+
+      /* ---------- 内容结构定义 ---------- */
+      var SECTIONS = [
+        { title: '基本信息', desc: '名字、浏览器标题、首页文字', fields: [
+          { path: 'name', label: '名字', type: 'text' },
+          { path: 'title', label: '浏览器标签页标题', type: 'text' },
+          { path: 'description', label: '网站描述（用于搜索引擎）', type: 'textarea' },
+          { path: 'heroLabel', label: '首页顶部小字', type: 'text' },
+          { path: 'heroStatement', label: '首页大标题', type: 'textarea' },
+          { path: 'tagline', label: '首页副标题（留空则隐藏）', type: 'text' }
+        ]},
+        { title: '打字机标签', desc: '首页大标题下方循环打字的身份标签', fields: [
+          { path: 'roles', label: '标签列表', type: 'stringList' }
+        ]},
+        { title: '各区块标题', desc: '每个板块的标题和灰色副标题', fields: [
+          { path: 'sections', label: '区块', type: 'mapObj', subFields: [
+            { path: 'title', label: '标题' },
+            { path: 'sub', label: '副标题' }
+          ]}
+        ]},
+        { title: '关于我', desc: '个人介绍段落和统计数字', fields: [
+          { path: 'about.paragraphs', label: '介绍段落', type: 'stringList' },
+          { path: 'about.stats', label: '统计数字', type: 'objectList', itemFields: [
+            { path: 'num', label: '数字' },
+            { path: 'label', label: '说明' }
+          ]}
+        ]},
+        { title: '我的经历', desc: '成长时间线（按时间倒序）', fields: [
+          { path: 'journey', label: '时间线条目', type: 'objectList', itemFields: [
+            { path: 'period', label: '时间段' },
+            { path: 'title', label: '标题' },
+            { path: 'desc', label: '描述' }
+          ]}
+        ]},
+        { title: '技能', desc: '技能进度条和常用工具标签', fields: [
+          { path: 'skills', label: '技能条', type: 'objectList', itemFields: [
+            { path: 'name', label: '名称' },
+            { path: 'percent', label: '百分比(0-100)', type: 'number' }
+          ]},
+          { path: 'tools', label: '工具标签', type: 'stringList' },
+          { path: 'toolsHeading', label: '标签区标题', type: 'text' }
+        ]},
+        { title: '兴趣爱好', desc: '兴趣卡片（图标用 emoji）', fields: [
+          { path: 'interests', label: '兴趣卡片', type: 'objectList', itemFields: [
+            { path: 'icon', label: '图标' },
+            { path: 'name', label: '名称' },
+            { path: 'desc', label: '描述' }
+          ]}
+        ]},
+        { title: '作品分类', desc: '决定作品区顶部标签栏的分类', fields: [
+          { path: 'workCategories', label: '分类列表', type: 'stringList' }
+        ]},
+        { title: '个人作品', desc: '作品卡片；编程作品显示查看源码/在线预览，其他分类显示查看作品', fields: [
+          { path: 'works', label: '作品卡片', type: 'objectList', itemFields: [
+            { path: 'category', label: '分类', type: 'select', optionsPath: 'workCategories' },
+            { path: 'title', label: '标题' },
+            { path: 'desc', label: '描述', type: 'textarea' },
+            { path: 'tags', label: '标签(逗号分隔)', type: 'commaList' },
+            { path: 'source', label: '源码/作品链接' },
+            { path: 'demo', label: '在线预览链接' }
+          ]}
+        ]},
+        { title: '文章', desc: '最近文章卡片', fields: [
+          { path: 'posts', label: '文章', type: 'objectList', itemFields: [
+            { path: 'title', label: '标题' },
+            { path: 'date', label: '日期(YYYY-MM-DD)' },
+            { path: 'category', label: '分类' },
+            { path: 'excerpt', label: '摘要', type: 'textarea' },
+            { path: 'link', label: '文章链接' }
+          ]}
+        ]},
+        { title: '生活瞬间（相册）', desc: '图片路径填 assets/gallery/ 下的文件；留空显示占位', fields: [
+          { path: 'gallery', label: '照片', type: 'objectList', itemFields: [
+            { path: 'title', label: '标题' },
+            { path: 'img', label: '图片路径' }
+          ]}
+        ]},
+        { title: '联系方式', desc: '邮箱可加多个；微信留空自动隐藏', fields: [
+          { path: 'contact.emails', label: '邮箱', type: 'objectList', itemFields: [
+            { path: 'label', label: '名称' },
+            { path: 'address', label: '地址' }
+          ]},
+          { path: 'contact.github.handle', label: 'GitHub 用户名', type: 'text' },
+          { path: 'contact.github.url', label: 'GitHub 链接', type: 'text' },
+          { path: 'contact.wechat', label: '微信号（留空隐藏）', type: 'text' },
+          { path: 'contact.socials', label: '其他社交账号', type: 'objectList', itemFields: [
+            { path: 'label', label: '名称' },
+            { path: 'handle', label: '显示名' },
+            { path: 'url', label: '链接' },
+            { path: 'icon', label: '图标(douyin/xiaohongshu)' }
+          ]}
+        ]}
+      ];
+
+      var data = JSON.parse(JSON.stringify(SITE));
+      var fileHandle = null;
+
+      /* ---------- 工具函数 ---------- */
+      function getPath(obj, path) {
+        return path.split('.').reduce(function (o, k) { return o ? o[k] : undefined; }, obj);
+      }
+      function setPath(obj, path, val) {
+        var ks = path.split('.');
+        var o = obj;
+        for (var i = 0; i < ks.length - 1; i++) o = o[ks[i]];
+        o[ks[ks.length - 1]] = val;
+      }
+      function el(tag, cls, html) {
+        var e = document.createElement(tag);
+        if (cls) e.className = cls;
+        if (html !== undefined) e.innerHTML = html;
+        return e;
+      }
+      function escapeHtml(s) {
+        return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
+
+      /* ---------- 渲染 ---------- */
+      function renderField(field) {
+        var wrap = el('div', 'field');
+        wrap.appendChild(el('label', '', escapeHtml(field.label)));
+        var type = field.type || 'text';
+
+        if (type === 'text' || type === 'number') {
+          var input = el('input');
+          input.type = type;
+          input.value = getPath(data, field.path) == null ? '' : getPath(data, field.path);
+          input.addEventListener('input', function () {
+            setPath(data, field.path, type === 'number' ? Number(input.value) : input.value);
+          });
+          wrap.appendChild(input);
+        } else if (type === 'textarea') {
+          var ta = el('textarea');
+          ta.value = getPath(data, field.path) || '';
+          ta.addEventListener('input', function () { setPath(data, field.path, ta.value); });
+          wrap.appendChild(ta);
+        } else if (type === 'commaList') {
+          var ci = el('input');
+          ci.type = 'text';
+          ci.value = (getPath(data, field.path) || []).join('，');
+          ci.addEventListener('input', function () {
+            setPath(data, field.path, ci.value.split(/[,，;；]/).map(function (s) { return s.trim(); }).filter(Boolean));
+          });
+          wrap.appendChild(ci);
+        } else if (type === 'stringList') {
+          wrap.appendChild(renderStringList(field.path));
+        } else if (type === 'objectList') {
+          wrap.appendChild(renderObjectList(field));
+        } else if (type === 'mapObj') {
+          wrap.appendChild(renderMapObj(field));
+        }
+        return wrap;
+      }
+
+      function renderStringList(path) {
+        var box = el('div', 'list');
+        var list = getPath(data, path) || [];
+        var rerender = function () { box.innerHTML = ''; box.appendChild(renderStringList(path)); };
+        list.forEach(function (val, i) {
+          var row = el('div', 'list-row');
+          var input = el('input');
+          input.type = 'text';
+          input.value = val;
+          input.addEventListener('input', function () { list[i] = input.value; });
+          var del = el('button', 'del', '删除');
+          del.addEventListener('click', function () { list.splice(i, 1); rerender(); });
+          row.appendChild(input);
+          row.appendChild(del);
+          box.appendChild(row);
+        });
+        var add = el('button', 'add', '＋ 添加一项');
+        add.addEventListener('click', function () { list.push(''); rerender(); });
+        box.appendChild(add);
+        return box;
+      }
+
+      function renderObjectList(field) {
+        var box = el('div', 'list');
+        var list = getPath(data, field.path) || [];
+        var rerender = function () { box.innerHTML = ''; box.appendChild(renderObjectList(field)); };
+        list.forEach(function (item, i) {
+          var card = el('div', 'list-row');
+          field.itemFields.forEach(function (f) {
+            if (f.label) card.appendChild(el('span', 'row-label', escapeHtml(f.label)));
+            if (f.type === 'number') {
+              var ni = el('input');
+              ni.type = 'number';
+              ni.value = item[f.path] == null ? '' : item[f.path];
+              ni.style.maxWidth = '90px';
+              ni.addEventListener('input', function () { item[f.path] = Number(ni.value); });
+              card.appendChild(ni);
+            } else if (f.type === 'textarea') {
+              var ta = el('textarea');
+              ta.rows = 2;
+              ta.value = item[f.path] || '';
+              ta.addEventListener('input', function () { item[f.path] = ta.value; });
+              card.appendChild(ta);
+            } else if (f.type === 'select') {
+              var sel = el('select');
+              (getPath(data, f.optionsPath) || []).forEach(function (opt) {
+                var op = el('option', '', escapeHtml(opt));
+                op.value = opt;
+                sel.appendChild(op);
+              });
+              sel.value = item[f.path] || '';
+              sel.addEventListener('change', function () { item[f.path] = sel.value; });
+              card.appendChild(sel);
+            } else if (f.type === 'commaList') {
+              var ci = el('input');
+              ci.type = 'text';
+              ci.value = (item[f.path] || []).join('，');
+              ci.addEventListener('input', function () {
+                item[f.path] = ci.value.split(/[,，;；]/).map(function (s) { return s.trim(); }).filter(Boolean);
+              });
+              card.appendChild(ci);
+            } else {
+              var input = el('input');
+              input.type = 'text';
+              input.value = item[f.path] || '';
+              input.addEventListener('input', function () { item[f.path] = input.value; });
+              card.appendChild(input);
+            }
+          });
+          var del = el('button', 'del', '删除');
+          del.addEventListener('click', function () { list.splice(i, 1); rerender(); });
+          card.appendChild(del);
+          box.appendChild(card);
+        });
+        var add = el('button', 'add', '＋ 添加一项');
+        add.addEventListener('click', function () {
+          var item = {};
+          field.itemFields.forEach(function (f) {
+            item[f.path] = f.type === 'number' ? 0 : (f.type === 'commaList' ? [] : '');
+            if (f.type === 'select' && (getPath(data, f.optionsPath) || []).length) {
+              item[f.path] = getPath(data, f.optionsPath)[0];
+            }
+          });
+          list.push(item);
+          rerender();
+        });
+        box.appendChild(add);
+        return box;
+      }
+
+      function renderMapObj(field) {
+        var box = el('div', 'list');
+        var obj = getPath(data, field.path) || {};
+        Object.keys(obj).forEach(function (key) {
+          var row = el('div', 'list-row');
+          row.appendChild(el('span', 'map-key', escapeHtml(key)));
+          field.subFields.forEach(function (f) {
+            if (f.label) row.appendChild(el('span', 'row-label', escapeHtml(f.label)));
+            var input = el('input');
+            input.type = 'text';
+            input.value = obj[key][f.path] || '';
+            input.addEventListener('input', function () { obj[key][f.path] = input.value; });
+            row.appendChild(input);
+          });
+          box.appendChild(row);
+        });
+        return box;
+      }
+
+      /* ---------- 组装页面 ---------- */
+      var app = document.getElementById('app');
+      SECTIONS.forEach(function (sec, i) {
+        var card = el('section', 'card');
+        var h2 = el('h2', '', '<span class="dot">●</span>' + escapeHtml(sec.title));
+        card.appendChild(h2);
+        if (sec.desc) card.appendChild(el('p', 'card-desc', escapeHtml(sec.desc)));
+        sec.fields.forEach(function (f) { card.appendChild(renderField(f)); });
+        app.appendChild(card);
+      });
+
+      /* ---------- 生成与保存 ---------- */
+      function generateContent() {
+        return '// 本文件由 admin.html 后台管理页面生成。\n// 如需修改内容，请打开 admin.html 操作，不要直接手改本文件。\n\nconst SITE = ' +
+          JSON.stringify(data, null, 2) + ';\n';
+      }
+
+      function setStatus(msg, color) {
+        var s = document.getElementById('status');
+        s.textContent = msg;
+        s.style.color = color || '#66707c';
+      }
+
+      function downloadText(text, filename) {
+        var blob = new Blob([text], { type: 'text/javascript' });
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+      }
+
+      document.getElementById('btn-export').addEventListener('click', function () {
+        downloadText(JSON.stringify(data, null, 2), 'content-backup.json');
+        setStatus('备份已下载 ✓', '#1d7a3f');
+      });
+
+      document.getElementById('btn-save').addEventListener('click', async function () {
+        var text = generateContent();
+        try {
+          if (!window.showSaveFilePicker) throw new Error('no-fs-access');
+          if (!fileHandle) {
+            fileHandle = await window.showSaveFilePicker({
+              suggestedName: 'content.js',
+              types: [{ description: 'JavaScript', accept: { 'text/javascript': ['.js'] } }]
+            });
+          }
+          var w = await fileHandle.createWritable();
+          await w.write(text);
+          await w.close();
+          setStatus('已保存 ✓ 刷新前台页面即可生效', '#1d7a3f');
+        } catch (e) {
+          if (e && e.name === 'AbortError') return;
+          downloadText(text, 'content.js');
+          setStatus('浏览器不支持直接写入文件，已下载 content.js，请覆盖到网站 js/ 目录', '#c92f2f');
+        }
+      });
+
+      /* ---------- 远程发布 ---------- */
+      var remoteUrlEl = document.getElementById('remoteUrl');
+      var remotePassEl = document.getElementById('remotePass');
+      var remoteStatus = document.getElementById('remote-status');
+      try {
+        var cfg = JSON.parse(localStorage.getItem('remoteAdminCfg') || '{}');
+        remoteUrlEl.value = cfg.url || '';
+        remotePassEl.value = cfg.pass || '';
+      } catch (e) { /* ignore */ }
+
+      document.getElementById('btn-save-remote-config').addEventListener('click', function () {
+        localStorage.setItem('remoteAdminCfg', JSON.stringify({ url: remoteUrlEl.value.trim(), pass: remotePassEl.value }));
+        remoteStatus.textContent = '设置已保存 ✓';
+        remoteStatus.style.color = '#1d7a3f';
+      });
+
+      document.getElementById('btn-publish-remote').addEventListener('click', async function () {
+        var url = remoteUrlEl.value.trim();
+        var pass = remotePassEl.value;
+        if (!url || !pass) {
+          remoteStatus.textContent = '请先填写 API 地址和密码';
+          remoteStatus.style.color = '#c92f2f';
+          return;
+        }
+        remoteStatus.textContent = '发布中...';
+        remoteStatus.style.color = '#66707c';
+        try {
+          var r = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password: pass, content: generateContent() })
+          });
+          var j = await r.json();
+          if (j.ok) {
+            remoteStatus.textContent = '已发布 ✓ 约 1 分钟后线上生效';
+            remoteStatus.style.color = '#1d7a3f';
+          } else {
+            remoteStatus.textContent = '发布失败: ' + (j.error || r.status);
+            remoteStatus.style.color = '#c92f2f';
+          }
+        } catch (e) {
+          remoteStatus.textContent = '无法连接 API: ' + e.message;
+          remoteStatus.style.color = '#c92f2f';
+        }
+      });
+
+      /* ---------- GitHub 直连发布 ---------- */
+      var ghTokenEl = document.getElementById('ghToken');
+      var ghRepoEl = document.getElementById('ghRepo');
+      var ghStatus = document.getElementById('gh-status');
+      try {
+        var ghCfg = JSON.parse(localStorage.getItem('ghAdminCfg') || '{}');
+        ghTokenEl.value = ghCfg.token || '';
+        ghRepoEl.value = ghCfg.repo || 'ldygml/liuyanjun-website';
+      } catch (e) { /* ignore */ }
+
+      document.getElementById('btn-save-gh').addEventListener('click', function () {
+        localStorage.setItem('ghAdminCfg', JSON.stringify({
+          token: ghTokenEl.value.trim(),
+          repo: ghRepoEl.value.trim() || 'ldygml/liuyanjun-website'
+        }));
+        ghStatus.textContent = '设置已保存 ✓';
+        ghStatus.style.color = '#1d7a3f';
+      });
+
+      document.getElementById('btn-publish-gh').addEventListener('click', async function () {
+        var token = ghTokenEl.value.trim();
+        var repo = ghRepoEl.value.trim() || 'ldygml/liuyanjun-website';
+        if (!token) {
+          ghStatus.textContent = '请先填写 GitHub 令牌';
+          ghStatus.style.color = '#c92f2f';
+          return;
+        }
+        var path = 'js/content.js';
+        var baseHeaders = {
+          Authorization: 'Bearer ' + token,
+          Accept: 'application/vnd.github+json',
+          'User-Agent': 'site-admin'
+        };
+        ghStatus.textContent = '发布中...';
+        ghStatus.style.color = '#66707c';
+        try {
+          var getRes = await fetch('https://api.github.com/repos/' + repo + '/contents/' + path, {
+            headers: { Authorization: baseHeaders.Authorization, Accept: baseHeaders.Accept, 'User-Agent': baseHeaders['User-Agent'] }
+          });
+          var meta = await getRes.json();
+          if (!meta.sha) {
+            ghStatus.textContent = '读取仓库失败: ' + (meta.message || getRes.status);
+            ghStatus.style.color = '#c92f2f';
+            return;
+          }
+          var b64 = btoa(unescape(encodeURIComponent(generateContent())));
+          var putRes = await fetch('https://api.github.com/repos/' + repo + '/contents/' + path, {
+            method: 'PUT',
+            headers: {
+              Authorization: baseHeaders.Authorization,
+              Accept: baseHeaders.Accept,
+              'User-Agent': baseHeaders['User-Agent'],
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ message: 'update from remote admin', content: b64, sha: meta.sha, branch: 'main' })
+          });
+          var putJson = await putRes.json();
+          if (putRes.ok) {
+            ghStatus.textContent = '已发布 ✓ 约 1 分钟后线上生效';
+            ghStatus.style.color = '#1d7a3f';
+          } else {
+            ghStatus.textContent = '发布失败: ' + (putJson.message || putRes.status);
+            ghStatus.style.color = '#c92f2f';
+          }
+        } catch (e) {
+          ghStatus.textContent = '无法连接: ' + e.message;
+          ghStatus.style.color = '#c92f2f';
+        }
+      });
+
+      /* 测试钩子：用于自动化验证生成内容 */
+      window.__adminGenerate = generateContent;
+      window.__adminData = function () { return data; };
+      setStatus('已加载当前内容');
+    })();
+  </script>
+</body>
+</html>
