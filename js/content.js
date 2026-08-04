@@ -3,7 +3,7 @@
 
 const SITE = {
   "name": "999gml",
-  "title": "ldy · 个人主页",
+  "title": "ldy 的测试",
   "description": "999gml的个人主页：关于我、技能、作品、文章与联系方式。",
   "tagline": "",
   "heroLabel": "你好，我是 999gml",
