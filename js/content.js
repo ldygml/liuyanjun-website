@@ -154,8 +154,8 @@ const SITE = {
   ],
   "gallery": [
     {
-      "title": "生活瞬间",
-      "img": ""
+      "title": "琴",
+      "img": "assets/gallery/gallery-1785856461443.jpg"
     },
     {
       "title": "生活瞬间",
