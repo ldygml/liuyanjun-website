@@ -14,11 +14,11 @@
 const SITE = {
 
   /* ---------- 基本信息 ---------- */
-  name: '刘彦君',                                  // 你的名字（导航栏、大标题、页脚）
-  title: '刘彦君 · 个人主页',                       // 浏览器标签页显示的标题
-  description: '刘彦君的个人主页：关于我、技能、作品、文章与联系方式。',
+  name: '999gml',                                  // 你的名字（导航栏、大标题、页脚）
+  title: '999gml · 个人主页',                       // 浏览器标签页显示的标题
+  description: '999gml的个人主页：关于我、技能、作品、文章与联系方式。',
   tagline: '',                                      // 首页大标题下方的一句话（留空则隐藏）
-  heroLabel: '你好，我是 刘彦君',                    // 首页顶部的小字
+  heroLabel: '你好，我是 999gml',                    // 首页顶部的小字
   heroStatement: 'Remember, with great power comes great responsibility.',  // 首页大标题
 
   /* 首页打字机循环显示的标签（会一个接一个打字出现） */
