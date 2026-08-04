@@ -248,23 +248,23 @@ const SITE = {
     },
     {
       "category": "视频",
-      "title": "校园生活 Vlog（占位）",
-      "desc": "等你上传视频作品后，在这里放上链接（B 站 / 抖音均可）。",
+      "title": "蜘蛛侠彩蛋",
+      "desc": "见抖音",
       "tags": [
         "Vlog"
       ],
       "source": "",
-      "demo": ""
+      "demo": "assets/works/work-1785857761609.mp4"
     },
     {
       "category": "图片",
-      "title": "摄影练习（占位）",
-      "desc": "等你整理好摄影作品后，在这里放上链接或图片。",
+      "title": "重庆牛B",
+      "desc": "铜梁龙必胜",
       "tags": [
         "摄影"
       ],
       "source": "",
-      "demo": ""
+      "demo": "assets/works/work-1785857718814.jpg"
     }
   ],
   "posts": [
