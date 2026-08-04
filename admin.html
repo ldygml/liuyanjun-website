@@ -245,14 +245,14 @@
         { title: '作品分类', desc: '决定作品区顶部标签栏的分类', fields: [
           { path: 'workCategories', label: '分类列表', type: 'stringList' }
         ]},
-        { title: '个人作品', desc: '作品卡片；编程作品显示查看源码/在线预览，其他分类显示查看作品', fields: [
+        { title: '个人作品', desc: '作品卡片；编程作品显示查看源码/在线预览；音乐/视频/图片作品支持上传本地文件（会自动命名并填好链接）', fields: [
           { path: 'works', label: '作品卡片', type: 'objectList', itemFields: [
             { path: 'category', label: '分类', type: 'select', optionsPath: 'workCategories' },
             { path: 'title', label: '标题' },
             { path: 'desc', label: '描述', type: 'textarea' },
             { path: 'tags', label: '标签(逗号分隔)', type: 'commaList' },
             { path: 'source', label: '源码/作品链接' },
-            { path: 'demo', label: '在线预览链接' }
+            { path: 'demo', label: '文件/链接（可上传）', type: 'mediaUpload' }
           ]}
         ]},
         { title: '文章', desc: '最近文章卡片', fields: [
@@ -417,7 +417,7 @@
               var pb = el('button', 'btn', '上传');
               pb.style.padding = '6px 12px';
               pb.addEventListener('click', function () {
-                pickPhoto(function (b64, name) {
+                pickFile('image/*', function (b64, name) {
                   uploadToRepo('assets/gallery/' + name, b64, function (err, path) {
                     if (err) { alert('上传失败: ' + err); return; }
                     item[f.path] = path;
@@ -428,6 +428,34 @@
               });
               card.appendChild(pi);
               card.appendChild(pb);
+            } else if (f.type === 'mediaUpload') {
+              var mi = el('input');
+              mi.type = 'text';
+              mi.value = item[f.path] || '';
+              mi.style.minWidth = '150px';
+              mi.addEventListener('input', function () { item[f.path] = mi.value; });
+              card.appendChild(mi);
+              var isCodeWork = item.category === '编程';
+              if (!isCodeWork) {
+                var mb = el('button', 'btn', '上传');
+                mb.style.padding = '6px 12px';
+                mb.addEventListener('click', function () {
+                  var accept = item.category === '音乐' ? 'audio/*' : (item.category === '视频' ? 'video/*' : 'image/*');
+                  pickFile(accept, function (b64, origName) {
+                    var ext = origName.split('.').pop().toLowerCase();
+                    if (!ext) ext = item.category === '音乐' ? 'mp3' : (item.category === '视频' ? 'mp4' : 'jpg');
+                    var name = 'work-' + Date.now() + '.' + ext;
+                    uploadToRepo('assets/works/' + name, b64, function (err, path) {
+                      if (err) { alert('上传失败: ' + err); return; }
+                      item.demo = path;
+                      mi.value = path;
+                      if (!item.title && origName) item.title = origName.replace(/\.[^.]+$/, '');
+                      alert('已上传 ✓ 发布后生效');
+                    });
+                  });
+                });
+                card.appendChild(mb);
+              }
             } else {
               var input = el('input');
               input.type = 'text';
@@ -655,8 +683,9 @@
       var photoFile = document.getElementById('photoFile');
       var pendingPhoto = null;
 
-      function pickPhoto(callback) {
+      function pickFile(accept, callback) {
         pendingPhoto = callback;
+        photoFile.accept = accept;
         photoFile.value = '';
         photoFile.click();
       }
@@ -667,19 +696,24 @@
         pendingPhoto = null;
         var reader = new FileReader();
         reader.onload = function () {
-          var imgEl = new Image();
-          imgEl.onload = function () {
-            var max = 1600;
-            var scale = Math.min(1, max / Math.max(imgEl.width, imgEl.height));
-            var canvas = document.createElement('canvas');
-            canvas.width = Math.round(imgEl.width * scale);
-            canvas.height = Math.round(imgEl.height * scale);
-            canvas.getContext('2d').drawImage(imgEl, 0, 0, canvas.width, canvas.height);
-            var b64 = canvas.toDataURL('image/jpeg', 0.82).split(',')[1];
-            var name = 'gallery-' + Date.now() + '.jpg';
-            cb(b64, name);
-          };
-          imgEl.src = reader.result;
+          if (file.type && file.type.indexOf('image/') === 0) {
+            var imgEl = new Image();
+            imgEl.onload = function () {
+              var max = 1600;
+              var scale = Math.min(1, max / Math.max(imgEl.width, imgEl.height));
+              var canvas = document.createElement('canvas');
+              canvas.width = Math.round(imgEl.width * scale);
+              canvas.height = Math.round(imgEl.height * scale);
+              canvas.getContext('2d').drawImage(imgEl, 0, 0, canvas.width, canvas.height);
+              var b64 = canvas.toDataURL('image/jpeg', 0.82).split(',')[1];
+              var name = 'gallery-' + Date.now() + '.jpg';
+              cb(b64, name);
+            };
+            imgEl.src = reader.result;
+          } else {
+            var b64 = reader.result.split(',')[1];
+            cb(b64, file.name || ('file-' + Date.now()));
+          }
         };
         reader.readAsDataURL(file);
       });
@@ -733,7 +767,7 @@
 
       document.getElementById('btn-upload-avatar').addEventListener('click', function () {
         var st = document.getElementById('avatar-status');
-        pickPhoto(function (b64) {
+        pickFile('image/*', function (b64) {
           st.textContent = '上传中...';
           st.style.color = '#66707c';
           uploadToRepo('avatars/avatar.jpg', b64, function (err) {
