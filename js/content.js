@@ -5,7 +5,7 @@ const SITE = {
   "name": "999gml",
   "title": "999gml的蛛窝",
   "description": "999gml的个人主页：关于我、技能、作品、文章与联系方式。",
-  "tagline": "",
+  "tagline": "Keep your eyes",
   "heroLabel": "你好，我是 999gml",
   "heroStatement": "Remember, with great power comes great responsibility.",
   "roles": [
@@ -187,6 +187,14 @@ const SITE = {
     {
       "title": "川大",
       "img": "assets/gallery/gallery-1785937256486.jpg"
+    },
+    {
+      "title": "孤独",
+      "img": "assets/gallery/gallery-1785942696426.jpg"
+    },
+    {
+      "title": "最爱",
+      "img": "assets/gallery/gallery-1785942679739.jpg"
     }
   ],
   "workCategories": [
@@ -286,7 +294,7 @@ const SITE = {
       "demo": "assets/works/work-1785857718814.jpg"
     }
   ],
-    "posts": [
+  "posts": [
     {
       "title": "一次矩阵旋转引发的思考",
       "date": "2026-08-05",
