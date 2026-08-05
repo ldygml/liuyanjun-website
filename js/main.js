@@ -11,6 +11,24 @@
   const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* ============================================================
+     控制台彩蛋
+     ============================================================ */
+  console.log('%c🕷️ 欢迎来到 999gml 的巢穴', 'font-size:18px;font-weight:700;color:#fff;background:#e23636;padding:8px 16px;border-radius:8px;');
+  console.log('%c   /\\_/\\%c\n  ( o.o )%c  —— 小蛛说：别乱翻，被主人发现会很尴尬的\n   > ^ <', 'color:#e23636;font-size:13px;', 'color:#2b5baa;font-size:13px;', 'color:#66707c;font-size:12px;');
+
+  /* 深夜彩蛋：晚上 22 点后到早上 6 点，小蛛眼睛发光 */
+  const nightHour = new Date().getHours();
+  if (nightHour >= 22 || nightHour < 6) document.body.classList.add('night');
+
+  /* 加载动画：页面加载完成或超时 2.5 秒后淡出 */
+  const loader = document.getElementById('siteLoader');
+  const hideLoader = () => {
+    if (loader && !loader.classList.contains('done')) loader.classList.add('done');
+  };
+  window.addEventListener('load', hideLoader);
+  setTimeout(hideLoader, 2500);
+
+  /* ============================================================
      根据 js/content.js 中的配置渲染网站内容
      （以后修改文字只需要编辑 js/content.js）
      ============================================================ */
