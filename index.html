@@ -5,7 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>999gml · 个人主页</title>
   <meta name="description" content="999gml的个人主页：关于我、技能、作品、文章与联系方式。" />
-  <meta name="theme-color" content="#fafafa" />
+  <meta name="theme-color" content="#f7f7f2" />
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="apple-touch-icon" href="./assets/icons/icon-192.png" />
+  <script>
+    if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('./sw.js').catch(function (e) { console.warn('SW register failed', e); });
+      });
+    }
+  </script>
   <link rel="canonical" href="https://ldygml.github.io/liuyanjun-website/" />
   <meta name="google-site-verification" content="dlxHDLYu2o1KjggFdpPnx2k5jmTcAfCK6WMIwEe_aGo" />
   <meta property="og:type" content="website" />
@@ -32,6 +41,18 @@
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
+  <div class="site-loader" id="siteLoader" aria-hidden="true">
+    <svg viewBox="0 0 120 120" class="loader-web" aria-hidden="true">
+      <g fill="none" stroke="#e23636" stroke-opacity="0.35">
+        <path d="M60 0v120M0 60h120M17 17l86 86M103 17L17 103" />
+        <circle cx="60" cy="60" r="16" />
+        <circle cx="60" cy="60" r="32" />
+        <circle cx="60" cy="60" r="48" />
+      </g>
+    </svg>
+    <span class="loader-spider" aria-hidden="true">🕷️</span>
+    <span class="loader-text">正在织网…</span>
+  </div>
   <a class="skip-link" href="#main">跳到主要内容</a>
   <div class="progress-bar" id="progressBar" aria-hidden="true"></div>
 
@@ -275,6 +296,7 @@
         <strong id="chatName">小蛛</strong>
         <span class="chat-status"> 在线</span>
       </div>
+      <button class="chat-voice" id="chatVoice" aria-label="语音播报开关">🔇</button>
       <button class="chat-close" id="chatClose" aria-label="关闭聊天">×</button>
     </div>
     <div class="chat-msgs" id="chatMsgs"></div>
