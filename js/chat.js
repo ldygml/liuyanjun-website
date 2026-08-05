@@ -83,6 +83,65 @@
   mascotBtn.addEventListener('click', openPanel);
   closeBtn.addEventListener('click', closePanel);
 
+  /* ---------- 拖动小蛛 ---------- */
+  try {
+    const saved = JSON.parse(localStorage.getItem('mascotPos') || 'null');
+    if (saved && typeof saved.x === 'number') {
+      mascotBtn.style.left = saved.x + 'px';
+      mascotBtn.style.top = saved.y + 'px';
+      mascotBtn.style.right = 'auto';
+      mascotBtn.style.bottom = 'auto';
+    }
+  } catch (err) { /* ignore */ }
+
+  let drag = null;
+  let suppressClick = false;
+  mascotBtn.addEventListener('pointerdown', (e) => {
+    const rect = mascotBtn.getBoundingClientRect();
+    drag = {
+      offsetX: e.clientX - rect.left,
+      offsetY: e.clientY - rect.top,
+      moved: 0,
+      lastX: e.clientX,
+      lastY: e.clientY
+    };
+    try { mascotBtn.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+    mascotBtn.classList.add('dragging');
+    e.preventDefault();
+  });
+  mascotBtn.addEventListener('pointermove', (e) => {
+    if (!drag) return;
+    drag.moved += Math.abs(e.clientX - drag.lastX) + Math.abs(e.clientY - drag.lastY);
+    drag.lastX = e.clientX;
+    drag.lastY = e.clientY;
+    const w = mascotBtn.offsetWidth;
+    const h = mascotBtn.offsetHeight;
+    mascotBtn.style.left = Math.max(0, Math.min(window.innerWidth - w, e.clientX - drag.offsetX)) + 'px';
+    mascotBtn.style.top = Math.max(0, Math.min(window.innerHeight - h, e.clientY - drag.offsetY)) + 'px';
+    mascotBtn.style.right = 'auto';
+    mascotBtn.style.bottom = 'auto';
+  });
+  mascotBtn.addEventListener('pointerup', () => {
+    if (!drag) return;
+    const wasDrag = drag.moved > 8;
+    mascotBtn.classList.remove('dragging');
+    const left = mascotBtn.style.left;
+    const top = mascotBtn.style.top;
+    drag = null;
+    if (left && top) {
+      try {
+        localStorage.setItem('mascotPos', JSON.stringify({ x: parseInt(left, 10), y: parseInt(top, 10) }));
+      } catch (err) { /* ignore */ }
+    }
+    if (wasDrag) {
+      suppressClick = true;
+      setTimeout(() => { suppressClick = false; }, 400);
+    }
+  });
+  mascotBtn.addEventListener('click', (e) => {
+    if (suppressClick) e.stopPropagation();
+  }, true);
+
   const typingEl = () => {
     const d = document.createElement('div');
     d.className = 'chat-msg bot typing';
