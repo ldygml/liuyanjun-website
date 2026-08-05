@@ -94,7 +94,7 @@
           body: JSON.stringify({ messages: history.slice(-10), model: cfg.model || '' })
         });
         const j = await r.json();
-        reply = j && j.reply ? j.reply : ((j && j.error) ? '（' + j.error + '）' : fallbackReply(text));
+        reply = j && j.reply ? j.reply : fallbackReply(text);
       } catch (e) {
         reply = fallbackReply(text);
       }
