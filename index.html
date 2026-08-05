@@ -54,6 +54,7 @@
       <button class="search-btn" id="searchBtn" aria-label="搜索" title="搜索（Ctrl+K）">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
       </button>
+      <button class="theme-btn" id="themeBtn" aria-label="切换深色模式" title="切换深色/浅色模式">🌙</button>
     </div>
   </header>
 
@@ -218,6 +219,14 @@
       <div class="search-results" id="searchResults"></div>
       <p class="search-hint">Enter 打开第一条结果 · Esc 关闭</p>
     </div>
+  </div>
+
+  <!-- 图片灯箱 -->
+  <div class="lightbox" id="lightbox" aria-hidden="true">
+    <button class="lightbox-close" id="lightboxClose" aria-label="关闭">×</button>
+    <button class="lightbox-nav prev" id="lightboxPrev" aria-label="上一张">‹</button>
+    <img id="lightboxImg" alt="图片预览" />
+    <button class="lightbox-nav next" id="lightboxNext" aria-label="下一张">›</button>
   </div>
 
   <!-- ================= 页脚 ================= -->
