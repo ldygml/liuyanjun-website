@@ -103,6 +103,7 @@
 
   const nextLevel = () => {
     level++;
+    state = 'playing';
     timeLeft = TIME_LIMIT;
     resetHook();
     spawnObjects();
@@ -382,6 +383,11 @@
     launch: launch,
     setTime: function (t) { timeLeft = t; },
     getTime: function () { return timeLeft; },
+    getGameState: function () { return state; },
+    forceClear: function () {
+      score = TARGETS[level - 1];
+      levelClear();
+    },
     forceGrab: function () {
       if (objects.length) {
         hook.target = objects[0];
