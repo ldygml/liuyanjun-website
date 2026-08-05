@@ -138,6 +138,11 @@
       setTimeout(() => { suppressClick = false; }, 400);
     }
   });
+  mascotBtn.addEventListener('pointercancel', () => {
+    if (!drag) return;
+    mascotBtn.classList.remove('dragging');
+    drag = null;
+  });
   mascotBtn.addEventListener('click', (e) => {
     if (suppressClick) e.stopPropagation();
   }, true);
