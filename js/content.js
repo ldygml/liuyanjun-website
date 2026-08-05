@@ -82,19 +82,19 @@ const SITE = {
   "skills": [
     {
       "name": "C / C++",
-      "percent": 85
+      "percent": 90
     },
     {
       "name": "Python",
-      "percent": 80
+      "percent": 60
     },
     {
       "name": "算法与数据结构",
-      "percent": 75
+      "percent": 80
     },
     {
       "name": "Web 开发",
-      "percent": 65
+      "percent": 75
     }
   ],
   "tools": [
