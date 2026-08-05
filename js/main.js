@@ -577,6 +577,81 @@
     });
   }
 
+  /* ---------- 点击蛛丝特效（蜘蛛侠） ---------- */
+  if (!prefersReduced) {
+    const webCanvas = document.createElement('canvas');
+    webCanvas.id = 'webFx';
+    document.body.appendChild(webCanvas);
+    const wctx = webCanvas.getContext('2d');
+    let webs = [];
+    let webRaf = null;
+
+    const resizeWeb = () => {
+      webCanvas.width = window.innerWidth;
+      webCanvas.height = window.innerHeight;
+    };
+    resizeWeb();
+    window.addEventListener('resize', resizeWeb, { passive: true });
+
+    const drawWeb = (x, y, r, alpha, rot) => {
+      const lines = 10;
+      wctx.save();
+      wctx.translate(x, y);
+      wctx.rotate(rot);
+      wctx.strokeStyle = 'rgba(226, 54, 54, ' + alpha + ')';
+      wctx.lineWidth = 1.4;
+      wctx.lineCap = 'round';
+      for (let i = 0; i < lines; i++) {
+        const a = (Math.PI * 2 * i) / lines;
+        wctx.beginPath();
+        wctx.moveTo(0, 0);
+        wctx.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+        wctx.stroke();
+      }
+      for (let k = 1; k <= 4; k++) {
+        const rr = (r * k) / 4;
+        wctx.beginPath();
+        wctx.arc(0, 0, rr, 0, Math.PI * 2);
+        wctx.stroke();
+      }
+      wctx.restore();
+    };
+
+    const webLoop = () => {
+      wctx.clearRect(0, 0, webCanvas.width, webCanvas.height);
+      webs = webs.filter((w) => w.life < w.maxLife);
+      webs.forEach((w) => {
+        w.life += 16;
+        const t = w.life / w.maxLife;
+        const r = w.maxR * (0.2 + 0.8 * t);
+        const alpha = Math.max(0, 0.9 * (1 - t * t));
+        drawWeb(w.x, w.y, r, alpha, w.rot);
+      });
+      if (webs.length) {
+        webRaf = requestAnimationFrame(webLoop);
+      } else {
+        webRaf = null;
+        wctx.clearRect(0, 0, webCanvas.width, webCanvas.height);
+      }
+    };
+
+    const spawnWeb = (x, y) => {
+      webs.push({
+        x: x,
+        y: y,
+        life: 0,
+        maxLife: 650,
+        maxR: 58 + Math.random() * 26,
+        rot: Math.random() * Math.PI * 2
+      });
+      if (!webRaf) webRaf = requestAnimationFrame(webLoop);
+    };
+
+    document.addEventListener('click', (e) => {
+      spawnWeb(e.clientX, e.clientY);
+    });
+  }
+
   /* ---------- 占位链接（#）不跳转 ---------- */
   document.querySelectorAll('a[href="#"]').forEach((a) => {
     a.addEventListener('click', (e) => e.preventDefault());
