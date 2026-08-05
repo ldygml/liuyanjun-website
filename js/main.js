@@ -146,12 +146,12 @@
   });
 
   const blog = $('blog-grid');
-  if (blog) blog.innerHTML = SITE.posts.map((post) =>
+  if (blog) blog.innerHTML = SITE.posts.map((post, i) =>
     '<article class="blog-card reveal">' +
       '<div class="blog-meta"><span class="chip">' + post.category + '</span><time datetime="' + post.date + '">' + post.date + '</time></div>' +
       '<h3>' + post.title + '</h3>' +
       '<p>' + post.excerpt + '</p>' +
-      '<a href="' + (post.link || '#') + '" class="link">阅读全文 →</a>' +
+      '<a href="' + (post.link || ('article.html?id=' + i)) + '" class="link">阅读全文 →</a>' +
     '</article>'
   ).join('');
 
@@ -508,6 +508,62 @@
     navLinks.forEach((link) => link.addEventListener('click', () => setMenu(false)));
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') setMenu(false);
+    });
+  }
+
+  /* ---------- 深色模式 ---------- */
+  const themeBtn = document.getElementById('themeBtn');
+  const metaTheme = document.querySelector('meta[name="theme-color"]');
+  const applyTheme = (dark) => {
+    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+    if (themeBtn) themeBtn.textContent = dark ? '☀️' : '🌙';
+    if (metaTheme) metaTheme.setAttribute('content', dark ? '#14161a' : '#fafafa');
+  };
+  if (themeBtn) {
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    applyTheme(savedTheme ? savedTheme === 'dark' : prefersDark);
+    themeBtn.addEventListener('click', () => {
+      const dark = document.documentElement.getAttribute('data-theme') !== 'dark';
+      applyTheme(dark);
+      localStorage.setItem('theme', dark ? 'dark' : 'light');
+    });
+  }
+
+  /* ---------- 图片灯箱 ---------- */
+  const lightbox = document.getElementById('lightbox');
+  if (lightbox) {
+    const lightboxImg = document.getElementById('lightboxImg');
+    const lightboxClose = document.getElementById('lightboxClose');
+    const lightboxPrev = document.getElementById('lightboxPrev');
+    const lightboxNext = document.getElementById('lightboxNext');
+    const galleryImgs = Array.from(document.querySelectorAll('.gallery-item img'));
+    let current = 0;
+    const openLightbox = (i) => {
+      current = (i + galleryImgs.length) % galleryImgs.length;
+      lightboxImg.src = galleryImgs[current].src;
+      lightbox.classList.add('open');
+      lightbox.setAttribute('aria-hidden', 'false');
+    };
+    const closeLightbox = () => {
+      lightbox.classList.remove('open');
+      lightbox.setAttribute('aria-hidden', 'true');
+    };
+    galleryImgs.forEach((img, i) => {
+      img.addEventListener('click', () => openLightbox(i));
+      img.style.cursor = 'zoom-in';
+    });
+    lightboxClose.addEventListener('click', closeLightbox);
+    lightboxPrev.addEventListener('click', () => openLightbox(current - 1));
+    lightboxNext.addEventListener('click', () => openLightbox(current + 1));
+    lightbox.addEventListener('click', (e) => {
+      if (e.target === lightbox) closeLightbox();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (!lightbox.classList.contains('open')) return;
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowLeft') openLightbox(current - 1);
+      if (e.key === 'ArrowRight') openLightbox(current + 1);
     });
   }
 
