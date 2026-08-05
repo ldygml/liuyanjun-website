@@ -237,6 +237,7 @@
           if (dx * dx + dy * dy < (o.r + 12) * (o.r + 12)) {
             hook.target = o;
             hook.state = 'reel';
+            objects.splice(i, 1);
             break;
           }
         }
@@ -372,6 +373,7 @@
         state: hook.state,
         len: Math.round(hook.len),
         target: hook.target ? hook.target.type.e : null,
+        objectsCount: objects.length,
         score: score,
         level: level
       };
