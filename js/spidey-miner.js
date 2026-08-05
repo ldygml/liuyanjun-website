@@ -7,7 +7,7 @@
   const W = canvas.width;
   const H = canvas.height;
   const ui = document.getElementById('gameUi');
-  const titleEl = document.getElementById('gameTitle');
+  const titleEl = document.querySelector('.game-title');
   const descEl = document.getElementById('gameDesc');
   const startBtn = document.getElementById('startBtn');
 
