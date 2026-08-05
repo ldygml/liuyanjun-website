@@ -253,6 +253,7 @@
         if (hook.target) collect(hook.target);
         hook.target = null;
         hook.state = 'swing';
+        hook.len = 46;
         hook.cd = 0.35;
       }
       hook.x = player.x + Math.sin(hook.angle) * hook.len;
