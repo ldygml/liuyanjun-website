@@ -13,9 +13,33 @@
   const input = document.getElementById('chatInput');
   const sendBtn = document.getElementById('chatSend');
   const closeBtn = document.getElementById('chatClose');
+  const voiceBtn = document.getElementById('chatVoice');
   const bubble = document.getElementById('mascotBubble');
   const chatName = document.getElementById('chatName');
   if (chatName) chatName.textContent = name;
+
+  /* 语音播报：让小蛛把回复读出来 */
+  let voiceOn = localStorage.getItem('mascotVoice') !== '0';
+  const setVoiceIcon = () => { if (voiceBtn) voiceBtn.textContent = voiceOn ? '🔊' : '🔇'; };
+  setVoiceIcon();
+  const speak = (text) => {
+    if (!voiceOn || !('speechSynthesis' in window) || !text) return;
+    try {
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text.replace(/[*#>`\[\]()]/g, ''));
+      u.lang = 'zh-CN';
+      u.rate = 1;
+      speechSynthesis.speak(u);
+    } catch (e) { /* ignore */ }
+  };
+  if (voiceBtn) {
+    voiceBtn.addEventListener('click', () => {
+      voiceOn = !voiceOn;
+      localStorage.setItem('mascotVoice', voiceOn ? '1' : '0');
+      setVoiceIcon();
+      if (voiceOn) speak('你好呀，我是小蛛');
+    });
+  }
 
   /* 网站资料摘要：让小蛛“读懂”网站，回答访客关于网站的问题 */
   const buildSiteInfo = () => {
@@ -187,6 +211,7 @@
     pushMsg('bot', reply);
     history.push({ role: 'assistant', content: reply });
     showBubble(reply, 4000);
+    speak(reply);
   };
 
   sendBtn.addEventListener('click', send);
