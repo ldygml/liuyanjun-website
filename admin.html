@@ -227,6 +227,14 @@
             { path: 'desc', label: '描述' }
           ]}
         ]},
+        { title: '个人荣誉', desc: '荣誉/奖项卡片', fields: [
+          { path: 'honors', label: '荣誉', type: 'objectList', itemFields: [
+            { path: 'icon', label: '图标(emoji)' },
+            { path: 'title', label: '名称' },
+            { path: 'date', label: '时间/年份' },
+            { path: 'desc', label: '说明' }
+          ]}
+        ]},
         { title: '技能', desc: '技能进度条和常用工具标签', fields: [
           { path: 'skills', label: '技能条', type: 'objectList', itemFields: [
             { path: 'name', label: '名称' },
