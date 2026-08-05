@@ -242,7 +242,7 @@
         }
       }
     } else if (hook.state === 'reel') {
-      const sp = Math.max(45, 150 / (hook.target ? hook.target.w : 1));
+      const sp = Math.max(45, 150 / (hook.target ? hook.target.type.w : 1));
       hook.len -= sp * dt;
       if (hook.len < 10) hook.len = 10;
       if (hook.target) {
