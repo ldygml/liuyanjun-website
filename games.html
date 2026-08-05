@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>游戏大厅 · 999gml</title>
+  <meta name="theme-color" content="#fafafa" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='42' fill='%23e23636'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .games-page { max-width: 860px; margin: 0 auto; padding: 110px 24px 80px; }
+    .games-title { font-size: 2.2rem; font-weight: 800; text-align: center; margin-bottom: 8px; }
+    .games-sub { text-align: center; color: var(--text-soft); margin-bottom: 44px; }
+    .games-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 22px; }
+    .game-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      text-align: center;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.4s var(--ease), box-shadow 0.4s var(--ease), border-color 0.3s;
+      display: block;
+    }
+    .game-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-md); border-color: rgba(var(--accent-rgb), 0.3); }
+    .game-card-thumb { font-size: 3rem; margin-bottom: 12px; }
+    .game-card h3 { font-size: 1.2rem; margin-bottom: 8px; }
+    .game-card p { color: var(--text-soft); font-size: 0.92rem; margin-bottom: 18px; line-height: 1.7; }
+  </style>
+</head>
+<body>
+  <header class="site-header scrolled">
+    <div class="container nav-wrap">
+      <a href="index.html" class="logo"><span id="logo-text">999gml</span><span class="logo-dot">.</span></a>
+      <a href="index.html" class="btn btn-ghost" style="padding:8px 16px;">← 返回网站</a>
+    </div>
+  </header>
+
+  <main class="games-page">
+    <h1 class="games-title">🕷️ 游戏大厅</h1>
+    <p class="games-sub">蜘蛛侠主题小游戏合集，陆续上新中</p>
+    <div class="games-grid">
+      <a class="game-card" href="game.html">
+        <div class="game-card-thumb">🔫</div>
+        <h3>蛛丝打怪兽</h3>
+        <p>自动射击蛛丝打落六种怪兽，每关 BOSS 战，关卡 + 无限双模式，还有大招和道具系统</p>
+        <span class="btn btn-primary">开始游戏</span>
+      </a>
+      <a class="game-card" href="catch-game.html">
+        <div class="game-card-thumb">🕸️</div>
+        <h3>蛛网大丰收</h3>
+        <p>移动蛛网接住 ⭐🕸️❤️ 好东西，躲开 💣 炸弹，越接越快，考验你的反应力</p>
+        <span class="btn btn-primary">开始游戏</span>
+      </a>
+    </div>
+  </main>
+
+  <script src="js/content.js"></script>
+</body>
+</html>
