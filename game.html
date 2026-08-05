@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>蛛丝打怪兽 · 999gml</title>
+  <meta name="theme-color" content="#0d1524" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='42' fill='%23e23636'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    body { background: #0d1524; color: #e8e6e0; }
+    .game-page {
+      display: flex;
+      justify-content: center;
+      padding: 90px 16px 60px;
+    }
+    .game-wrap {
+      position: relative;
+      width: min(480px, 100%);
+    }
+    canvas#game {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 14px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      touch-action: none;
+      background: #0d1524;
+    }
+    .game-ui {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      background: rgba(10, 14, 22, 0.74);
+      border-radius: 14px;
+      gap: 14px;
+      padding: 20px;
+    }
+    .game-ui.hidden { display: none; }
+    .game-title { font-size: 2rem; font-weight: 800; margin: 0; }
+    .game-desc { font-size: 0.95rem; color: #c6cdd8; margin: 0; line-height: 1.8; }
+    .game-desc b { color: #fff; }
+  </style>
+</head>
+<body>
+  <header class="site-header scrolled">
+    <div class="container nav-wrap">
+      <a href="index.html" class="logo"><span id="logo-text">999gml</span><span class="logo-dot">.</span></a>
+      <a href="index.html" class="btn btn-ghost" style="padding:8px 16px;">← 返回网站</a>
+    </div>
+  </header>
+
+  <main class="game-page">
+    <div class="game-wrap">
+      <canvas id="game" width="480" height="640"></canvas>
+      <div class="game-ui" id="gameUi">
+        <div class="game-title">🕷️ 蛛丝打怪兽</div>
+        <p class="game-desc">
+          移动：← → 或 A / D，也可以用鼠标/手指拖动<br />
+          发射：空格键，或按住鼠标 / 手指<br />
+          用蛛丝打落怪兽，别让它们溜走！
+        </p>
+        <button class="btn btn-primary" id="startBtn">开始游戏</button>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/content.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>
