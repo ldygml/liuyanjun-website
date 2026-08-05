@@ -20,6 +20,7 @@
   const player = { x: W / 2, y: 42 };
   const hook = { angle: 0, dir: 1, state: 'swing', len: 46, x: W / 2, y: 42, target: null, cd: 0 };
   let objects = [];
+  let refillCd = 2;
   let parts = [];
   let words = [];
   let flash = 0;
@@ -74,19 +75,23 @@
     objects = [];
     const count = 8 + level;
     for (let i = 0; i < count; i++) {
-      const r = Math.random();
-      let acc = 0, chosen = TYPES[0];
-      for (let t = 0; t < TYPES.length; t++) {
-        acc += TYPES[t].p;
-        if (r <= acc) { chosen = TYPES[t]; break; }
-      }
-      objects.push({
-        type: chosen,
-        x: 44 + Math.random() * (W - 88),
-        y: 150 + Math.random() * (H - 220),
-        r: chosen.r
-      });
+      spawnOne();
     }
+  };
+
+  const spawnOne = () => {
+    const r = Math.random();
+    let acc = 0, chosen = TYPES[0];
+    for (let t = 0; t < TYPES.length; t++) {
+      acc += TYPES[t].p;
+      if (r <= acc) { chosen = TYPES[t]; break; }
+    }
+    objects.push({
+      type: chosen,
+      x: 44 + Math.random() * (W - 88),
+      y: 150 + Math.random() * (H - 220),
+      r: chosen.r
+    });
   };
 
   const startGame = () => {
@@ -120,6 +125,7 @@
     hook.y = player.y;
     hook.target = null;
     hook.cd = 0;
+    refillCd = 2;
     flash = 0;
     parts = [];
     words = [];
@@ -261,6 +267,15 @@
       }
       hook.x = player.x + Math.sin(hook.angle) * hook.len;
       hook.y = player.y + Math.cos(hook.angle) * hook.len;
+    }
+
+    // 物品补货：防止矿井被搬空导致无法达标
+    if (objects.length < 6) {
+      refillCd -= dt;
+      if (refillCd <= 0) {
+        spawnOne();
+        refillCd = 1.3;
+      }
     }
 
     for (let i = parts.length - 1; i >= 0; i--) {
