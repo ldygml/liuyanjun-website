@@ -19,7 +19,10 @@
   let score = 0;
   let bestLevel = 0;
   let bestInf = 0;
-  let lives = 3;
+  let hp = 3;
+  let shield = 0;
+  let webCount = 1;
+  let pickups = [];
   let power = 0;
   let ults = 0;
   let toDefeat = 0;
@@ -133,13 +136,17 @@
     state = 'playing';
     level = 1;
     score = 0;
-    lives = 3;
+    hp = 3;
+    shield = 0;
+    webCount = 1;
+    pickups = [];
     power = 0;
     ults = 1;
     webs = [];
     enemies = [];
     parts = [];
     words = [];
+    pickups = [];
     player.x = W / 2;
     player.y = H - 110;
     fireCd = 0;
@@ -302,10 +309,20 @@
 
     // 发射
     fireCd -= dt;
-    if ((keys[' '] || pointerDown) && fireCd <= 0) {
-      fireCd = 0.22;
-      webs.push({ x: player.x + aimX * 20, y: player.y + aimY * 20 - 12, vx: aimX * 540, vy: aimY * 540 });
-      beep(520, 0.05, 'square', 0.04);
+    if (fireCd <= 0) {
+      fireCd = 0.3;
+      const base = -Math.PI / 2;
+      const spread = (10 * Math.PI) / 180;
+      for (let i = 0; i < webCount; i++) {
+        const ang = base + (i - (webCount - 1) / 2) * spread;
+        webs.push({
+          x: player.x + Math.cos(ang) * 20,
+          y: player.y + Math.sin(ang) * 20 - 14,
+          vx: Math.cos(ang) * 540,
+          vy: Math.sin(ang) * 540
+        });
+      }
+      beep(520, 0.04, 'square', 0.03);
     }
 
     // 蛛丝
@@ -379,11 +396,32 @@
 
     // 漏怪扣命
     for (let i = enemies.length - 1; i >= 0; i--) {
-      if (enemies[i].y > H + 30 && !enemies[i].wrap) {
+      const e = enemies[i];
+      if (e.y > H + 30 && !e.wrap) {
         enemies.splice(i, 1);
-        lives--;
-        beep(200, 0.18, 'sawtooth', 0.08);
-        if (lives <= 0) { gameOver(); return; }
+        if (shield > 0) {
+          shield--;
+          words.push({ x: e.x, y: H - 70, text: '🛡️', life: 0.7 });
+          beep(320, 0.12, 'triangle', 0.07);
+        } else {
+          hp--;
+          beep(200, 0.18, 'sawtooth', 0.08);
+          if (hp <= 0) { gameOver(); return; }
+        }
+      }
+    }
+
+    // 道具拾取
+    for (let i = pickups.length - 1; i >= 0; i--) {
+      const p = pickups[i];
+      p.y += 55 * dt;
+      const dx = p.x - player.x;
+      const dy = p.y - player.y;
+      if (dx * dx + dy * dy < 36 * 36) {
+        pickups.splice(i, 1);
+        applyPickup(p);
+      } else if (p.y > H + 20) {
+        pickups.splice(i, 1);
       }
     }
 
@@ -438,7 +476,37 @@
       const a = Math.random() * Math.PI * 2;
       parts.push({ x: e.x, y: e.y, vx: Math.cos(a) * 100, vy: Math.sin(a) * 100, r: 2 + Math.random() * 3, life: 0.4 });
     }
+    if (Math.random() < 0.22) {
+      const r = Math.random();
+      const type = r < 0.45 ? 'hp' : (r < 0.7 ? 'shield' : 'web');
+      const emoji = type === 'hp' ? '❤️' : (type === 'shield' ? '🛡️' : '🕸️');
+      pickups.push({ x: e.x, y: e.y, type: type, emoji: emoji });
+    }
     beep(880, 0.08, 'triangle', 0.06);
+  };
+
+  const applyPickup = (p) => {
+    if (p.type === 'hp') {
+      hp++;
+      words.push({ x: player.x, y: player.y - 50, text: '❤️ +1', life: 0.7 });
+    } else if (p.type === 'shield') {
+      if (shield < 2) {
+        shield++;
+        words.push({ x: player.x, y: player.y - 50, text: '🛡️ +1', life: 0.7 });
+      } else {
+        score += 10;
+        words.push({ x: player.x, y: player.y - 50, text: '+10', life: 0.7 });
+      }
+    } else {
+      if (webCount < 5) {
+        webCount++;
+        words.push({ x: player.x, y: player.y - 50, text: '🕸️ +1', life: 0.7 });
+      } else {
+        score += 10;
+        words.push({ x: player.x, y: player.y - 50, text: '+10', life: 0.7 });
+      }
+    }
+    beep(700, 0.08, 'triangle', 0.06);
   };
 
   /* ---- 绘制 ---- */
@@ -466,6 +534,13 @@
     ctx.ellipse(5.5, -12, 5.5, 7, 0.25, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
+    for (let i = 0; i < shield; i++) {
+      ctx.strokeStyle = 'rgba(91, 141, 239, 0.55)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(0, 2, 28 + i * 8, 0, Math.PI * 2);
+      ctx.stroke();
+    }
     ctx.restore();
   };
 
@@ -538,6 +613,15 @@
 
     enemies.forEach(drawEnemy);
     webs.forEach(drawWebShot);
+    pickups.forEach((p) => {
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.font = '30px serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(p.emoji, 0, 0);
+      ctx.restore();
+    });
     parts.forEach((p) => {
       ctx.fillStyle = 'rgba(255,255,255,' + Math.max(0, p.life / 0.4) + ')';
       ctx.beginPath();
@@ -589,12 +673,15 @@
       ctx.fillText('最高 ' + bestInf, W - 16, 30);
     }
     ctx.textAlign = 'left';
-    let heart = '';
-    for (let i = 0; i < lives; i++) heart += '🕷️';
-    ctx.font = '18px serif';
-    ctx.fillText(heart, 16, 58);
+    ctx.font = 'bold 16px sans-serif';
+    ctx.fillStyle = '#ff8a8a';
+    ctx.fillText('❤️ ' + hp, 16, 58);
+    ctx.fillStyle = '#8ab8ff';
+    ctx.fillText('🛡️ ' + shield, 16, 82);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText('🕸️ ' + webCount, 16, 106);
     // 能量条
-    const bw = 150, bh = 10, bx = 16, by = 72;
+    const bw = 150, bh = 10, bx = 16, by = 120;
     ctx.fillStyle = 'rgba(255,255,255,0.15)';
     ctx.fillRect(bx, by, bw, bh);
     ctx.fillStyle = '#ffd54a';
