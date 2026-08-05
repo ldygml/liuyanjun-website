@@ -242,7 +242,7 @@
         }
       }
     } else if (hook.state === 'reel') {
-      const sp = 280 / (hook.target ? hook.target.w : 1);
+      const sp = Math.max(45, 150 / (hook.target ? hook.target.w : 1));
       hook.len -= sp * dt;
       if (hook.len < 10) hook.len = 10;
       if (hook.target) {
@@ -363,4 +363,25 @@
   };
 
   draw();
+
+  /* 调试钩子（不影响游戏） */
+  window.__minerTest = {
+    getState: function () {
+      return {
+        state: hook.state,
+        len: Math.round(hook.len),
+        target: hook.target ? hook.target.type.e : null,
+        score: score,
+        level: level
+      };
+    },
+    launch: launch,
+    forceGrab: function () {
+      if (objects.length) {
+        hook.target = objects[0];
+        hook.state = 'reel';
+        hook.len = 220;
+      }
+    }
+  };
 })();
