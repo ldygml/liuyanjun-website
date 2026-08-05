@@ -217,13 +217,13 @@
     }
 
     if (hook.state === 'swing') {
-      hook.angle += hook.dir * 1.3 * dt;
-      if (hook.angle > 1.2) { hook.angle = 1.2; hook.dir = -1; }
-      if (hook.angle < -1.2) { hook.angle = -1.2; hook.dir = 1; }
+      hook.angle += hook.dir * 0.85 * dt;
+      if (hook.angle > 1.1) { hook.angle = 1.1; hook.dir = -1; }
+      if (hook.angle < -1.1) { hook.angle = -1.1; hook.dir = 1; }
       hook.x = player.x + Math.sin(hook.angle) * hook.len;
       hook.y = player.y + Math.cos(hook.angle) * hook.len;
     } else if (hook.state === 'out') {
-      hook.len += 480 * dt;
+      hook.len += 300 * dt;
       hook.x = player.x + Math.sin(hook.angle) * hook.len;
       hook.y = player.y + Math.cos(hook.angle) * hook.len;
       if (hook.x < 6 || hook.x > W - 6 || hook.y > H - 6) {
@@ -242,7 +242,7 @@
         }
       }
     } else if (hook.state === 'reel') {
-      const sp = 420 / (hook.target ? hook.target.w : 1);
+      const sp = 280 / (hook.target ? hook.target.w : 1);
       hook.len -= sp * dt;
       if (hook.len < 10) hook.len = 10;
       if (hook.target) {
