@@ -208,6 +208,11 @@
         { title: '打字机标签', desc: '首页大标题下方循环打字的身份标签', fields: [
           { path: 'roles', label: '标签列表', type: 'stringList' }
         ]},
+        { title: 'AI 聊天（小蛛）', desc: '网站吉祥物配置。apiUrl 填代理接口地址（如 https://website-admin-api.vercel.app/api/chat），留空则使用预设回复', fields: [
+          { path: 'chat.name', label: '名字' },
+          { path: 'chat.greeting', label: '开场白' },
+          { path: 'chat.apiUrl', label: 'AI 接口地址（留空用预设回复）' }
+        ]},
         { title: '各区块标题', desc: '每个板块的标题和灰色副标题', fields: [
           { path: 'sections', label: '区块', type: 'mapObj', subFields: [
             { path: 'title', label: '标题' },
