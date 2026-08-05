@@ -1,4 +1,4 @@
-/* 蜘蛛侠 · 蛛丝打怪兽（类打飞机小游戏） */
+/* 蜘蛛侠 · 蛛丝打怪兽 v2：关卡/无限双模式 + 大招 + 全屏移动 + 多类型怪物 */
 (function () {
   'use strict';
 
@@ -7,15 +7,26 @@
   const W = canvas.width;
   const H = canvas.height;
   const ui = document.getElementById('gameUi');
-  const titleEl = document.getElementById('gameTitle');
+  const titleEl = document.querySelector('.game-title');
   const descEl = document.getElementById('gameDesc');
-  const startBtn = document.getElementById('startBtn');
+  const btnLevel = document.getElementById('btnLevel');
+  const btnInfinite = document.getElementById('btnInfinite');
+  const ultBtn = document.getElementById('ultBtn');
 
-  let state = 'start';
+  let state = 'start';      // start | playing | levelclear | win | over
+  let mode = null;          // 'level' | 'infinite'
+  let level = 1;
   let score = 0;
-  let best = 0;
+  let bestLevel = 0;
+  let bestInf = 0;
   let lives = 3;
-  const player = { x: W / 2, y: H - 64 };
+  let power = 0;
+  let ults = 0;
+  let toDefeat = 0;
+  let defeated = 0;
+  let ulting = 0;
+
+  const player = { x: W / 2, y: H - 110 };
   let webs = [];
   let enemies = [];
   let parts = [];
@@ -23,18 +34,36 @@
   const stars = [];
   const keys = {};
   let fireCd = 0;
-  let spawnCd = 0.8;
+  let spawnCd = 1;
   let pointerX = null;
+  let pointerY = null;
   let pointerDown = false;
+  let aimX = 0;
+  let aimY = -1;
   let raf = null;
   let last = 0;
 
-  const EMOJIS = ['👾', '👹', '🐙', '💀', '🦇', '👻'];
+  const TYPES = [
+    { e: '👾', name: '普通', hp: 1, size: 26, speed: 85, move: 'straight', score: 10 },
+    { e: '🐙', name: '波浪', hp: 1, size: 26, speed: 80, move: 'sine', score: 10 },
+    { e: '👹', name: '追踪', hp: 2, size: 30, speed: 90, move: 'chase', score: 20 },
+    { e: '💀', name: '快速', hp: 1, size: 24, speed: 165, move: 'straight', score: 15 },
+    { e: '🦇', name: '闪避', hp: 1, size: 24, speed: 100, move: 'zigzag', score: 15 },
+    { e: '👻', name: '飘忽', hp: 1, size: 26, speed: 95, move: 'diagonal', score: 15 }
+  ];
 
-  try { best = parseInt(localStorage.getItem('spideyBest') || '0', 10) || 0; } catch (e) { /* ignore */ }
+  const LEVEL_TARGETS = [15, 20, 26, 32, 40];
+  const LEVEL_UNLOCKS = [0, 2, 3, 4, 5];
+  const ULT_THRESHOLD = 60;
+  const MAX_ULTS = 2;
 
-  for (let i = 0; i < 46; i++) {
-    stars.push({ x: Math.random() * W, y: Math.random() * H, r: Math.random() * 1.4 + 0.3 });
+  try {
+    bestLevel = parseInt(localStorage.getItem('spideyBestLevel') || '0', 10) || 0;
+    bestInf = parseInt(localStorage.getItem('spideyBestInf') || '0', 10) || 0;
+  } catch (e) { /* ignore */ }
+
+  for (let i = 0; i < 70; i++) {
+    stars.push({ x: Math.random() * W, y: Math.random() * H, r: Math.random() * 1.5 + 0.3 });
   }
 
   /* ---- 音效 ---- */
@@ -58,177 +87,309 @@
   /* ---- 输入 ---- */
   window.addEventListener('keydown', (e) => {
     keys[e.key] = true;
-    if (e.key === 'Enter' && (state === 'start' || state === 'over')) startGame();
+    const k = e.key.toLowerCase();
+    if (k === 'e' && state === 'playing' && ults > 0) triggerUlt();
+    if (e.key === 'Enter' && (state === 'over' || state === 'win')) startGame(mode);
+    if (e.key === 'Enter' && state === 'levelclear') nextLevel();
     if ([' ', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].indexOf(e.key) !== -1) e.preventDefault();
   });
   window.addEventListener('keyup', (e) => { keys[e.key] = false; });
 
-  const toGameX = (clientX) => {
+  const toGame = (clientX, clientY) => {
     const r = canvas.getBoundingClientRect();
-    return ((clientX - r.left) / r.width) * W;
+    return {
+      x: ((clientX - r.left) / r.width) * W,
+      y: ((clientY - r.top) / r.height) * H
+    };
   };
-  canvas.addEventListener('mousemove', (e) => { pointerX = toGameX(e.clientX); });
-  canvas.addEventListener('mousedown', (e) => { pointerX = toGameX(e.clientX); pointerDown = true; });
+  canvas.addEventListener('mousemove', (e) => {
+    const p = toGame(e.clientX, e.clientY);
+    pointerX = p.x;
+    pointerY = p.y;
+  });
+  canvas.addEventListener('mousedown', (e) => {
+    const p = toGame(e.clientX, e.clientY);
+    pointerX = p.x;
+    pointerY = p.y;
+    pointerDown = true;
+  });
   window.addEventListener('mouseup', () => { pointerDown = false; });
   canvas.addEventListener('touchstart', (e) => {
     e.preventDefault();
-    pointerX = toGameX(e.touches[0].clientX);
+    const p = toGame(e.touches[0].clientX, e.touches[0].clientY);
+    pointerX = p.x;
+    pointerY = p.y;
     pointerDown = true;
   }, { passive: false });
   canvas.addEventListener('touchmove', (e) => {
     e.preventDefault();
-    pointerX = toGameX(e.touches[0].clientX);
+    const p = toGame(e.touches[0].clientX, e.touches[0].clientY);
+    pointerX = p.x;
+    pointerY = p.y;
   }, { passive: false });
   canvas.addEventListener('touchend', () => { pointerDown = false; });
 
   /* ---- 流程 ---- */
-  const startGame = () => {
+  const setUI = (title, html, showModeBtns) => {
+    titleEl.textContent = title;
+    descEl.innerHTML = html;
+    btnLevel.style.display = showModeBtns ? '' : 'none';
+    btnInfinite.style.display = showModeBtns ? '' : 'none';
+    ui.classList.remove('hidden');
+  };
+
+  const startGame = (m) => {
+    mode = m;
     state = 'playing';
+    level = 1;
     score = 0;
     lives = 3;
+    power = 0;
+    ults = 1;
     webs = [];
     enemies = [];
     parts = [];
     words = [];
     player.x = W / 2;
+    player.y = H - 110;
     fireCd = 0;
-    spawnCd = 0.8;
+    spawnCd = 1;
+    ulting = 0;
+    defeated = 0;
+    toDefeat = m === 'level' ? LEVEL_TARGETS[0] : 0;
     ui.classList.add('hidden');
+    ultBtn.classList.remove('hidden');
+    updateUltBtn();
     if (!raf) raf = requestAnimationFrame(loop);
     beep(660, 0.12, 'triangle', 0.07);
   };
 
+  const nextLevel = () => {
+    level++;
+    state = 'playing';
+    webs = [];
+    enemies = [];
+    parts = [];
+    words = [];
+    ults = Math.min(MAX_ULTS, ults + 1);
+    player.x = W / 2;
+    player.y = H - 110;
+    defeated = 0;
+    toDefeat = LEVEL_TARGETS[level - 1] || 40;
+    spawnCd = 0.8;
+    ui.classList.add('hidden');
+    updateUltBtn();
+    beep(520, 0.1, 'triangle', 0.07);
+  };
+
   const gameOver = () => {
     state = 'over';
-    if (score > best) {
-      best = score;
-      try { localStorage.setItem('spideyBest', String(best)); } catch (e) { /* ignore */ }
+    if (mode === 'level') {
+      if (score > bestLevel) {
+        bestLevel = score;
+        try { localStorage.setItem('spideyBestLevel', String(bestLevel)); } catch (e) { /* ignore */ }
+      }
+      setUI('💥 游戏结束', '关卡 ' + level + ' · 得分 <b>' + score + '</b> · 最高 <b>' + bestLevel + '</b><br/>按 Enter 或点按钮再来一局', false);
+    } else {
+      if (score > bestInf) {
+        bestInf = score;
+        try { localStorage.setItem('spideyBestInf', String(bestInf)); } catch (e) { /* ignore */ }
+      }
+      setUI('💥 游戏结束', '得分 <b>' + score + '</b> · 无限模式最高 <b>' + bestInf + '</b><br/>按 Enter 或点按钮再来一局', false);
     }
-    titleEl.textContent = '💥 游戏结束';
-    descEl.innerHTML = '得分 <b>' + score + '</b> · 最高 <b>' + best + '</b><br/>按 Enter 或点按钮再来一局';
-    startBtn.textContent = '再来一局';
-    ui.classList.remove('hidden');
+    ultBtn.classList.add('hidden');
     if (raf) { cancelAnimationFrame(raf); raf = null; }
     draw();
     beep(220, 0.3, 'sawtooth', 0.08);
   };
 
-  startBtn.addEventListener('click', startGame);
-
-  /* ---- 绘制 ---- */
-  const drawPlayer = () => {
-    const x = player.x, y = player.y;
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.fillStyle = '#2b5baa';
-    ctx.beginPath();
-    ctx.ellipse(0, 16, 13, 17, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#e23636';
-    ctx.beginPath();
-    ctx.arc(0, -14, 17, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#ffffff';
-    ctx.strokeStyle = '#1f2933';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.ellipse(-7, -16, 6, 8, -0.25, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.ellipse(7, -16, 6, 8, 0.25, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-    ctx.restore();
-  };
-
-  const drawWeb = (w) => {
-    ctx.save();
-    ctx.translate(w.x, w.y);
-    ctx.strokeStyle = 'rgba(255,255,255,0.92)';
-    ctx.lineWidth = 1.5;
-    for (let i = 0; i < 8; i++) {
-      const a = (Math.PI * 2 * i) / 8;
-      ctx.beginPath();
-      ctx.moveTo(Math.cos(a) * 2, Math.sin(a) * 2);
-      ctx.lineTo(Math.cos(a) * 9, Math.sin(a) * 9);
-      ctx.stroke();
+  const winGame = () => {
+    state = 'win';
+    if (score > bestLevel) {
+      bestLevel = score;
+      try { localStorage.setItem('spideyBestLevel', String(bestLevel)); } catch (e) { /* ignore */ }
     }
-    ctx.beginPath();
-    ctx.arc(0, 0, 5.5, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.restore();
+    setUI('🎉 全部通关！', '5 关全部完成！得分 <b>' + score + '</b> · 历史最高 <b>' + bestLevel + '</b><br/>按 Enter 再来一局', false);
+    ultBtn.classList.add('hidden');
+    if (raf) { cancelAnimationFrame(raf); raf = null; }
+    draw();
+    beep(880, 0.25, 'triangle', 0.08);
   };
 
-  const drawEnemy = (e) => {
-    ctx.save();
-    ctx.translate(e.x, e.y);
-    ctx.font = '38px serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(e.emoji, 0, 0);
-    ctx.restore();
+  const levelClear = () => {
+    state = 'levelclear';
+    ults = Math.min(MAX_ULTS, ults + 1);
+    if (level >= LEVEL_TARGETS.length) {
+      winGame();
+      return;
+    }
+    setUI('🎯 第 ' + level + ' 关完成！', '已消灭 <b>' + defeated + '</b> 只怪兽 · 得分 <b>' + score + '</b><br/>按 Enter 或点按钮进入下一关', false);
+    beep(660, 0.15, 'triangle', 0.08);
+  };
+
+  btnLevel.addEventListener('click', () => startGame('level'));
+  btnInfinite.addEventListener('click', () => startGame('infinite'));
+  ultBtn.addEventListener('click', () => { if (state === 'playing' && ults > 0) triggerUlt(); });
+  ui.addEventListener('click', (e) => {
+    if (state === 'over' || state === 'win') startGame(mode);
+    if (state === 'levelclear') nextLevel();
+  });
+
+  const updateUltBtn = () => {
+    ultBtn.textContent = '⚡ 大招 ×' + ults;
+    ultBtn.disabled = ults <= 0;
+  };
+
+  const triggerUlt = () => {
+    ults--;
+    updateUltBtn();
+    ulting = 0.9;
+    enemies.forEach((e) => { e.wrap = true; e.wrapT = 0; });
+    words.push({ x: player.x, y: player.y - 60, text: 'THWIP!', life: 0.8 });
+    beep(440, 0.25, 'sawtooth', 0.1);
+    setTimeout(() => beep(880, 0.2, 'square', 0.08), 120);
+  };
+
+  /* ---- 生成怪物 ---- */
+  const availableTypes = (lvl) => {
+    if (mode === 'level') {
+      const idx = LEVEL_UNLOCKS[lvl - 1] || 5;
+      return TYPES.slice(0, idx);
+    }
+    const sc = score;
+    if (sc < 120) return TYPES.slice(0, 2);
+    if (sc < 250) return TYPES.slice(0, 4);
+    if (sc < 400) return TYPES.slice(0, 5);
+    return TYPES;
+  };
+
+  const spawnEnemy = () => {
+    const pool = availableTypes(level);
+    const t = pool[Math.floor(Math.random() * pool.length)];
+    const x = 40 + Math.random() * (W - 80);
+    enemies.push({
+      type: t,
+      x: x,
+      y: -30,
+      baseX: x,
+      dir: Math.random() < 0.5 ? -1 : 1,
+      t: 0,
+      hp: t.hp,
+      flash: 0,
+      wrap: false,
+      wrapT: 0,
+      hit: false
+    });
   };
 
   /* ---- 更新 ---- */
   const update = (dt) => {
-    const speed = 320 * dt;
-    if (keys.ArrowLeft || keys.a) player.x -= speed;
-    if (keys.ArrowRight || keys.d) player.x += speed;
-    if (pointerX !== null) {
-      player.x += (pointerX - player.x) * Math.min(1, dt * 14);
+    // 玩家全屏移动
+    let dx = 0, dy = 0;
+    if (keys.ArrowLeft || keys.a) dx -= 1;
+    if (keys.ArrowRight || keys.d) dx += 1;
+    if (keys.ArrowUp || keys.w) dy -= 1;
+    if (keys.ArrowDown || keys.s) dy += 1;
+    if (dx || dy) {
+      const l = Math.hypot(dx, dy);
+      player.x += (dx / l) * 380 * dt;
+      player.y += (dy / l) * 380 * dt;
     }
-    player.x = Math.max(24, Math.min(W - 24, player.x));
+    if (pointerX !== null) {
+      player.x += (pointerX - player.x) * Math.min(1, dt * 9);
+      player.y += (pointerY - player.y) * Math.min(1, dt * 9);
+      const ax = pointerX - player.x;
+      const ay = pointerY - player.y;
+      const al = Math.hypot(ax, ay) || 1;
+      aimX = ax / al;
+      aimY = ay / al;
+    } else {
+      aimX = 0;
+      aimY = -1;
+    }
+    player.x = Math.max(26, Math.min(W - 26, player.x));
+    player.y = Math.max(60, Math.min(H - 46, player.y));
 
+    // 发射
     fireCd -= dt;
     if ((keys[' '] || pointerDown) && fireCd <= 0) {
-      fireCd = 0.24;
-      webs.push({ x: player.x, y: player.y - 38, vy: -460 });
+      fireCd = 0.22;
+      webs.push({ x: player.x + aimX * 20, y: player.y + aimY * 20 - 12, vx: aimX * 540, vy: aimY * 540 });
       beep(520, 0.05, 'square', 0.04);
     }
 
+    // 蛛丝
     for (let i = webs.length - 1; i >= 0; i--) {
       const w = webs[i];
+      w.x += w.vx * dt;
       w.y += w.vy * dt;
-      if (w.y < -20) { webs.splice(i, 1); continue; }
+      if (w.x < -20 || w.x > W + 20 || w.y < -20 || w.y > H + 20) {
+        webs.splice(i, 1);
+        continue;
+      }
       for (let j = enemies.length - 1; j >= 0; j--) {
         const e = enemies[j];
-        const dx = w.x - e.x;
-        const dy = w.y - e.y;
-        if (dx * dx + dy * dy < 34 * 34) {
+        const dx2 = w.x - e.x;
+        const dy2 = w.y - e.y;
+        if (dx2 * dx2 + dy2 * dy2 < 30 * 30) {
           webs.splice(i, 1);
-          enemies.splice(j, 1);
-          score += 10;
-          words.push({
-            x: e.x,
-            y: e.y,
-            text: ['BAM!', 'POW!', 'THWIP!'][Math.floor(Math.random() * 3)],
-            life: 0.7
-          });
-          for (let k = 0; k < 10; k++) {
-            const a = Math.random() * Math.PI * 2;
-            parts.push({ x: e.x, y: e.y, vx: Math.cos(a) * 90, vy: Math.sin(a) * 90, r: 2 + Math.random() * 3, life: 0.4 });
+          e.hp--;
+          if (e.hp <= 0) {
+            killEnemy(j);
+          } else {
+            e.flash = 0.15;
+            beep(700, 0.06, 'triangle', 0.05);
           }
-          beep(880, 0.08, 'triangle', 0.06);
           break;
         }
       }
     }
 
-    spawnCd -= dt;
-    if (spawnCd <= 0) {
-      enemies.push({
-        x: 30 + Math.random() * (W - 60),
-        y: -26,
-        v: 70 + score * 0.6,
-        emoji: EMOJIS[Math.floor(Math.random() * EMOJIS.length)]
+    // 大招包裹
+    if (ulting > 0) {
+      ulting -= dt;
+      enemies.forEach((e) => {
+        if (e.wrap) e.wrapT += dt;
       });
-      spawnCd = Math.max(0.35, 0.9 - score * 0.006);
+      for (let j = enemies.length - 1; j >= 0; j--) {
+        if (enemies[j].wrap && enemies[j].wrapT >= 0.75) {
+          killEnemy(j);
+        }
+      }
     }
+
+    // 怪物移动
+    enemies.forEach((e) => {
+      e.t += dt;
+      if (e.flash > 0) e.flash -= dt;
+      if (e.wrap) return;
+      const t = e.type;
+      const v = t.speed * (1 + score * 0.0008);
+      if (t.move === 'straight') {
+        e.y += v * dt;
+      } else if (t.move === 'sine') {
+        e.y += v * dt;
+        e.x = e.baseX + Math.sin(e.t * 3) * 55;
+      } else if (t.move === 'chase') {
+        const cx = player.x - e.x;
+        const cy = player.y - e.y;
+        const cl = Math.hypot(cx, cy) || 1;
+        e.x += (cx / cl) * v * 0.7 * dt;
+        e.y += (cy / cl) * v * 0.9 * dt;
+      } else if (t.move === 'zigzag') {
+        e.y += v * dt;
+        e.x += e.dir * 130 * dt;
+        if (e.x < 30) { e.x = 30; e.dir = 1; }
+        if (e.x > W - 30) { e.x = W - 30; e.dir = -1; }
+      } else if (t.move === 'diagonal') {
+        e.x += e.dir * 90 * dt;
+        e.y += v * 1.15 * dt;
+      }
+    });
+
+    // 漏怪扣命
     for (let i = enemies.length - 1; i >= 0; i--) {
-      const e = enemies[i];
-      e.y += e.v * dt;
-      if (e.y > H + 30) {
+      if (enemies[i].y > H + 30 && !enemies[i].wrap) {
         enemies.splice(i, 1);
         lives--;
         beep(200, 0.18, 'sawtooth', 0.08);
@@ -236,6 +397,17 @@
       }
     }
 
+    // 生成
+    if (ulting <= 0) {
+      spawnCd -= dt;
+      if (spawnCd <= 0) {
+        spawnEnemy();
+        const base = mode === 'level' ? Math.max(0.5, 1.05 - level * 0.1) : Math.max(0.3, 0.85 - score * 0.004);
+        spawnCd = base;
+      }
+    }
+
+    // 粒子 / 文字
     for (let i = parts.length - 1; i >= 0; i--) {
       const p = parts[i];
       p.life -= dt;
@@ -248,6 +420,114 @@
       words[i].y -= 60 * dt;
       if (words[i].life <= 0) words.splice(i, 1);
     }
+
+    // 关卡模式通关判定
+    if (mode === 'level' && defeated >= toDefeat) {
+      levelClear();
+    }
+  };
+
+  const killEnemy = (idx) => {
+    const e = enemies[idx];
+    enemies.splice(idx, 1);
+    score += e.type.score;
+    defeated++;
+    power += e.type.score;
+    while (power >= ULT_THRESHOLD) {
+      power -= ULT_THRESHOLD;
+      if (ults < MAX_ULTS) ults++;
+    }
+    updateUltBtn();
+    words.push({
+      x: e.x,
+      y: e.y,
+      text: ['BAM!', 'POW!', 'THWIP!'][Math.floor(Math.random() * 3)],
+      life: 0.7
+    });
+    for (let k = 0; k < 10; k++) {
+      const a = Math.random() * Math.PI * 2;
+      parts.push({ x: e.x, y: e.y, vx: Math.cos(a) * 100, vy: Math.sin(a) * 100, r: 2 + Math.random() * 3, life: 0.4 });
+    }
+    beep(880, 0.08, 'triangle', 0.06);
+  };
+
+  /* ---- 绘制 ---- */
+  const drawPlayer = () => {
+    const x = player.x, y = player.y;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(Math.atan2(aimY, aimX) + Math.PI / 2);
+    ctx.fillStyle = '#2b5baa';
+    ctx.beginPath();
+    ctx.ellipse(0, 20, 15, 19, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#e23636';
+    ctx.beginPath();
+    ctx.arc(0, -14, 19, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.strokeStyle = '#1f2933';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.ellipse(-8, -17, 7, 9, -0.25, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.ellipse(8, -17, 7, 9, 0.25, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+  };
+
+  const drawWebShot = (w) => {
+    ctx.save();
+    ctx.translate(w.x, w.y);
+    ctx.strokeStyle = 'rgba(255,255,255,0.92)';
+    ctx.lineWidth = 1.6;
+    for (let i = 0; i < 8; i++) {
+      const a = (Math.PI * 2 * i) / 8;
+      ctx.beginPath();
+      ctx.moveTo(Math.cos(a) * 2, Math.sin(a) * 2);
+      ctx.lineTo(Math.cos(a) * 10, Math.sin(a) * 10);
+      ctx.stroke();
+    }
+    ctx.beginPath();
+    ctx.arc(0, 0, 6, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  };
+
+  const drawEnemy = (e) => {
+    ctx.save();
+    ctx.translate(e.x, e.y);
+    const size = e.type.size;
+    if (e.wrap) {
+      // 蛛丝包裹
+      ctx.strokeStyle = 'rgba(255,255,255,0.95)';
+      ctx.lineWidth = 2;
+      for (let i = 0; i < 8; i++) {
+        const a = (Math.PI * 2 * i) / 8;
+        ctx.beginPath();
+        ctx.moveTo(Math.cos(a) * 4, Math.sin(a) * 4);
+        ctx.lineTo(Math.cos(a) * (size + 8), Math.sin(a) * (size + 8));
+        ctx.stroke();
+      }
+      ctx.beginPath();
+      ctx.arc(0, 0, size + 4, 0, Math.PI * 2);
+      ctx.stroke();
+    } else {
+      ctx.font = size + 'px serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(e.type.e, 0, 0);
+      if (e.flash > 0) {
+        ctx.fillStyle = 'rgba(255,255,255,' + Math.min(1, e.flash * 6) + ')';
+        ctx.beginPath();
+        ctx.arc(0, 0, size * 0.75, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    ctx.restore();
   };
 
   const draw = () => {
@@ -259,7 +539,7 @@
 
     ctx.fillStyle = 'rgba(255,255,255,0.5)';
     stars.forEach((s) => {
-      ctx.globalAlpha = 0.4 + Math.sin(Date.now() / 900 + s.x) * 0.2;
+      ctx.globalAlpha = 0.35 + Math.sin(Date.now() / 900 + s.x) * 0.2;
       ctx.beginPath();
       ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
       ctx.fill();
@@ -267,7 +547,7 @@
     ctx.globalAlpha = 1;
 
     enemies.forEach(drawEnemy);
-    webs.forEach(drawWeb);
+    webs.forEach(drawWebShot);
     parts.forEach((p) => {
       ctx.fillStyle = 'rgba(255,255,255,' + Math.max(0, p.life / 0.4) + ')';
       ctx.beginPath();
@@ -275,7 +555,7 @@
       ctx.fill();
     });
     words.forEach((w) => {
-      ctx.font = 'bold 30px sans-serif';
+      ctx.font = 'bold 32px sans-serif';
       ctx.textAlign = 'center';
       ctx.strokeStyle = '#e23636';
       ctx.lineWidth = 3;
@@ -283,19 +563,56 @@
       ctx.fillStyle = 'rgba(255,255,255,' + Math.max(0, w.life / 0.7) + ')';
       ctx.fillText(w.text, w.x, w.y);
     });
+
+    // 大招全屏蛛网
+    if (ulting > 0) {
+      const p = 1 - ulting / 0.9;
+      const cx = W / 2, cy = H / 2;
+      const maxR = Math.hypot(W, H) / 2 * Math.min(1, p * 1.8);
+      ctx.strokeStyle = 'rgba(255,255,255,' + (0.5 * (1 - p)) + ')';
+      ctx.lineWidth = 2;
+      for (let i = 0; i < 12; i++) {
+        const a = (Math.PI * 2 * i) / 12;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + Math.cos(a) * maxR, cy + Math.sin(a) * maxR);
+        ctx.stroke();
+      }
+      for (let k = 1; k <= 6; k++) {
+        ctx.beginPath();
+        ctx.arc(cx, cy, (maxR * k) / 6, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+    }
+
     drawPlayer();
 
-    ctx.font = 'bold 18px sans-serif';
+    // HUD
+    ctx.font = 'bold 20px sans-serif';
     ctx.textAlign = 'left';
     ctx.fillStyle = '#fff';
-    ctx.fillText('得分 ' + score, 14, 26);
+    ctx.fillText('得分 ' + score, 16, 30);
     ctx.textAlign = 'right';
-    ctx.fillText('最高 ' + best, W - 14, 26);
-    ctx.textAlign = 'center';
+    if (mode === 'level') {
+      ctx.fillText('第 ' + level + ' 关 · ' + defeated + '/' + toDefeat, W - 16, 30);
+    } else {
+      ctx.fillText('最高 ' + bestInf, W - 16, 30);
+    }
+    ctx.textAlign = 'left';
     let heart = '';
     for (let i = 0; i < lives; i++) heart += '🕷️';
-    ctx.font = '16px serif';
-    ctx.fillText(heart, W / 2, 26);
+    ctx.font = '18px serif';
+    ctx.fillText(heart, 16, 58);
+    // 能量条
+    const bw = 150, bh = 10, bx = 16, by = 72;
+    ctx.fillStyle = 'rgba(255,255,255,0.15)';
+    ctx.fillRect(bx, by, bw, bh);
+    ctx.fillStyle = '#ffd54a';
+    ctx.fillRect(bx, by, bw * Math.min(1, power / ULT_THRESHOLD), bh);
+    ctx.font = 'bold 14px sans-serif';
+    ctx.fillStyle = '#ffd54a';
+    ctx.textAlign = 'left';
+    ctx.fillText('⚡ ' + ults, bx + bw + 10, by + 10);
   };
 
   const loop = (t) => {
