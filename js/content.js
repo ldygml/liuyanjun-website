@@ -59,7 +59,7 @@ const SITE = {
     "chat":  {
                  "name":  "小蛛",
                  "greeting":  "你好呀！我是小蛛🕷️ 点我聊天～",
-                 "apiUrl":  ""
+                 "apiUrl":  "https://website-admin-api.vercel.app/api/chat"
              },
     "about":  {
                   "paragraphs":  [
