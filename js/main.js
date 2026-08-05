@@ -73,6 +73,16 @@
     '</div>'
   ).join('');
 
+  const honors = $('honors-grid');
+  if (honors) honors.innerHTML = SITE.honors.map((h) =>
+    '<div class="honor-card reveal">' +
+      '<span class="honor-icon" aria-hidden="true">' + (h.icon || '🏅') + '</span>' +
+      (h.date ? '<span class="honor-date">' + h.date + '</span>' : '') +
+      '<h3>' + h.title + '</h3>' +
+      (h.desc ? '<p>' + h.desc + '</p>' : '') +
+    '</div>'
+  ).join('');
+
   const interests = $('interests-grid');
   if (interests) interests.innerHTML = SITE.interests.map((item) =>
     '<div class="interest-card reveal">' +
