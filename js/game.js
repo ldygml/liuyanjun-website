@@ -23,6 +23,10 @@
   let shield = 0;
   let webCount = 1;
   let pickups = [];
+  let boss = null;
+  let bossActive = false;
+  let bullets = [];
+  let playerHit = 0;
   let power = 0;
   let ults = 0;
   let toDefeat = 0;
@@ -140,6 +144,10 @@
     shield = 0;
     webCount = 1;
     pickups = [];
+    boss = null;
+    bossActive = false;
+    bullets = [];
+    playerHit = 0;
     power = 0;
     ults = 1;
     webs = [];
@@ -147,6 +155,7 @@
     parts = [];
     words = [];
     pickups = [];
+    bullets = [];
     player.x = W / 2;
     player.y = H - 110;
     fireCd = 0;
@@ -242,6 +251,12 @@
     updateUltBtn();
     ulting = 0.9;
     enemies.forEach((e) => { e.wrap = true; e.wrapT = 0; });
+    if (bossActive && boss) {
+      boss.hp -= 8;
+      boss.hitFlash = 0.2;
+      words.push({ x: boss.x, y: boss.y - 60, text: 'THWIP!', life: 0.8 });
+      if (boss.hp <= 0) bossDefeated();
+    }
     words.push({ x: player.x, y: player.y - 60, text: 'THWIP!', life: 0.8 });
     beep(440, 0.25, 'sawtooth', 0.1);
     setTimeout(() => beep(880, 0.2, 'square', 0.08), 120);
@@ -350,6 +365,17 @@
           break;
         }
       }
+      if (bossActive && boss) {
+        const bx2 = w.x - boss.x;
+        const by2 = w.y - boss.y;
+        if (bx2 * bx2 + by2 * by2 < 52 * 52) {
+          webs.splice(i, 1);
+          boss.hp--;
+          boss.hitFlash = 0.12;
+          beep(760, 0.07, 'triangle', 0.06);
+          if (boss.hp <= 0) bossDefeated();
+        }
+      }
     }
 
     // 大招包裹
@@ -425,8 +451,60 @@
       }
     }
 
+    // BOSS 行动
+    if (bossActive && boss) {
+      boss.t += dt;
+      boss.x = W / 2 + Math.sin(boss.t * 0.8) * (W / 2 - 100);
+      boss.y = 140 + Math.sin(boss.t * 1.7) * 22;
+      if (boss.hitFlash > 0) boss.hitFlash -= dt;
+      boss.fireCd -= dt;
+      if (boss.fireCd <= 0) {
+        boss.fireCd = Math.max(0.8, 1.6 - level * 0.1);
+        bossFire();
+      }
+      boss.minionCd -= dt;
+      if (boss.minionCd <= 0) {
+        boss.minionCd = 3;
+        if (enemies.length < 3) {
+          const pool = TYPES.slice(0, Math.min(2, LEVEL_UNLOCKS[level - 1] || 2));
+          const t = pool[Math.floor(Math.random() * pool.length)];
+          enemies.push({
+            type: t,
+            x: 50 + Math.random() * (W - 100),
+            y: -30,
+            baseX: 50,
+            dir: Math.random() < 0.5 ? -1 : 1,
+            t: 0,
+            hp: t.hp,
+            flash: 0,
+            wrap: false,
+            wrapT: 0,
+            hit: false
+          });
+        }
+      }
+    }
+
+    // BOSS 子弹
+    if (playerHit > 0) playerHit -= dt;
+    for (let i = bullets.length - 1; i >= 0; i--) {
+      const b = bullets[i];
+      b.x += b.vx * dt;
+      b.y += b.vy * dt;
+      if (b.x < -20 || b.x > W + 20 || b.y < -20 || b.y > H + 20) {
+        bullets.splice(i, 1);
+        continue;
+      }
+      const dx = b.x - player.x;
+      const dy = b.y - player.y;
+      if (dx * dx + dy * dy < 28 * 28) {
+        bullets.splice(i, 1);
+        damagePlayer();
+      }
+    }
+
     // 生成
-    if (ulting <= 0) {
+    if (ulting <= 0 && !bossActive) {
       spawnCd -= dt;
       if (spawnCd <= 0) {
         spawnEnemy();
@@ -450,8 +528,8 @@
     }
 
     // 关卡模式通关判定
-    if (mode === 'level' && defeated >= toDefeat) {
-      levelClear();
+    if (mode === 'level' && !bossActive && defeated >= toDefeat) {
+      spawnBoss();
     }
   };
 
@@ -463,7 +541,7 @@
     power += e.type.score;
     while (power >= ULT_THRESHOLD) {
       power -= ULT_THRESHOLD;
-      if (ults < MAX_ULTS) ults++;
+    if (ults < MAX_ULTS) ults++;
     }
     updateUltBtn();
     words.push({
@@ -507,6 +585,62 @@
       }
     }
     beep(700, 0.08, 'triangle', 0.06);
+  };
+
+  const damagePlayer = () => {
+    if (playerHit > 0) return;
+    if (shield > 0) {
+      shield--;
+      words.push({ x: player.x, y: player.y - 50, text: '🛡️', life: 0.6 });
+      beep(320, 0.12, 'triangle', 0.07);
+    } else {
+      hp--;
+      beep(200, 0.18, 'sawtooth', 0.08);
+      if (hp <= 0) { gameOver(); return; }
+    }
+    playerHit = 0.6;
+  };
+
+  const spawnBoss = () => {
+    boss = {
+      x: W / 2,
+      y: 140,
+      hp: 18 + level * 10,
+      maxHp: 18 + level * 10,
+      t: 0,
+      fireCd: 1.5,
+      minionCd: 2,
+      hitFlash: 0
+    };
+    bossActive = true;
+    words.push({ x: W / 2, y: 90, text: '⚠️ BOSS 来袭!', life: 1.2 });
+    beep(180, 0.35, 'sawtooth', 0.1);
+  };
+
+  const bossFire = () => {
+    const ang = Math.atan2(player.y - boss.y, player.x - boss.x);
+    for (let i = -1; i <= 1; i++) {
+      const a = ang + i * 0.22;
+      bullets.push({ x: boss.x, y: boss.y + 30, vx: Math.cos(a) * 210, vy: Math.sin(a) * 210 });
+    }
+    beep(300, 0.1, 'sawtooth', 0.06);
+  };
+
+  const bossDefeated = () => {
+    const b = boss;
+    boss = null;
+    bossActive = false;
+    score += 100 * level;
+    words.push({ x: b.x, y: b.y, text: 'BOSS 击破!', life: 1 });
+    for (let k = 0; k < 26; k++) {
+      const a = Math.random() * Math.PI * 2;
+      parts.push({ x: b.x, y: b.y, vx: Math.cos(a) * 160, vy: Math.sin(a) * 160, r: 2 + Math.random() * 4, life: 0.6 });
+    }
+    pickups.push({ x: b.x - 40, y: b.y, type: 'hp', emoji: '❤️' });
+    pickups.push({ x: b.x, y: b.y, type: 'shield', emoji: '🛡️' });
+    pickups.push({ x: b.x + 40, y: b.y, type: 'web', emoji: '🕸️' });
+    beep(440, 0.3, 'sawtooth', 0.1);
+    levelClear();
   };
 
   /* ---- 绘制 ---- */
@@ -595,6 +729,32 @@
     ctx.restore();
   };
 
+  const drawBoss = () => {
+    if (!bossActive || !boss) return;
+    const b = boss;
+    ctx.save();
+    ctx.translate(b.x, b.y);
+    if (b.hitFlash > 0) ctx.globalAlpha = 0.5;
+    ctx.font = '80px serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('😈', 0, 0);
+    ctx.restore();
+    ctx.globalAlpha = 1;
+    const bw2 = 220, bh2 = 14, bx2 = W / 2 - bw2 / 2, by2 = 40;
+    ctx.fillStyle = 'rgba(255,255,255,0.15)';
+    ctx.fillRect(bx2, by2, bw2, bh2);
+    ctx.fillStyle = '#e23636';
+    ctx.fillRect(bx2, by2, bw2 * Math.max(0, b.hp / b.maxHp), bh2);
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(bx2, by2, bw2, bh2);
+    ctx.font = 'bold 14px sans-serif';
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'center';
+    ctx.fillText('BOSS', W / 2, by2 - 8);
+  };
+
   const draw = () => {
     const g = ctx.createLinearGradient(0, 0, 0, H);
     g.addColorStop(0, '#16233b');
@@ -612,6 +772,7 @@
     ctx.globalAlpha = 1;
 
     enemies.forEach(drawEnemy);
+    drawBoss();
     webs.forEach(drawWebShot);
     pickups.forEach((p) => {
       ctx.save();
@@ -621,6 +782,15 @@
       ctx.textBaseline = 'middle';
       ctx.fillText(p.emoji, 0, 0);
       ctx.restore();
+    });
+    bullets.forEach((b) => {
+      ctx.fillStyle = 'rgba(255, 90, 120, 0.9)';
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
     });
     parts.forEach((p) => {
       ctx.fillStyle = 'rgba(255,255,255,' + Math.max(0, p.life / 0.4) + ')';
@@ -659,7 +829,9 @@
       }
     }
 
+    if (playerHit > 0) ctx.globalAlpha = 0.55;
     drawPlayer();
+    ctx.globalAlpha = 1;
 
     // HUD
     ctx.font = 'bold 20px sans-serif';
@@ -701,4 +873,21 @@
   };
 
   draw();
+
+  /* 调试钩子（不影响游戏） */
+  window.__spideyTest = {
+    spawnBoss: spawnBoss,
+    getState: function () {
+      return {
+        state: state,
+        bossActive: bossActive,
+        bossHp: boss ? boss.hp : null,
+        defeated: defeated,
+        toDefeat: toDefeat,
+        hp: hp,
+        shield: shield,
+        webCount: webCount
+      };
+    }
+  };
 })();
