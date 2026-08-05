@@ -9,21 +9,14 @@
   <link rel="stylesheet" href="css/style.css" />
   <style>
     body { background: #0d1524; color: #e8e6e0; }
-    .game-page {
-      display: flex;
-      justify-content: center;
-      padding: 90px 16px 60px;
-    }
-    .game-wrap {
-      position: relative;
-      width: min(480px, 100%);
-    }
+    .game-page { display: flex; justify-content: center; padding: 88px 16px 60px; }
+    .game-wrap { position: relative; width: min(800px, 100%); }
     canvas#game {
       width: 100%;
       height: auto;
       display: block;
-      border-radius: 14px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      border-radius: 16px;
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
       touch-action: none;
       background: #0d1524;
     }
@@ -35,15 +28,35 @@
       align-items: center;
       justify-content: center;
       text-align: center;
-      background: rgba(10, 14, 22, 0.74);
-      border-radius: 14px;
+      background: rgba(10, 14, 22, 0.78);
+      border-radius: 16px;
       gap: 14px;
-      padding: 20px;
+      padding: 22px;
     }
     .game-ui.hidden { display: none; }
-    .game-title { font-size: 2rem; font-weight: 800; margin: 0; }
-    .game-desc { font-size: 0.95rem; color: #c6cdd8; margin: 0; line-height: 1.8; }
+    .game-title { font-size: 2.3rem; font-weight: 800; margin: 0; }
+    .game-desc { font-size: 0.95rem; color: #c6cdd8; margin: 0; line-height: 1.9; }
     .game-desc b { color: #fff; }
+    .mode-row { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+    .ult-btn {
+      position: absolute;
+      right: 14px;
+      bottom: 14px;
+      z-index: 5;
+      border: none;
+      background: linear-gradient(135deg, #e23636, #7c2d2d);
+      color: #fff;
+      border-radius: 999px;
+      padding: 12px 20px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 8px 22px rgba(226, 54, 54, 0.4);
+      transition: transform 0.2s var(--ease);
+    }
+    .ult-btn:hover { transform: translateY(-2px) scale(1.04); }
+    .ult-btn.hidden { display: none; }
+    .ult-btn:disabled { opacity: 0.45; cursor: not-allowed; }
   </style>
 </head>
 <body>
@@ -56,16 +69,21 @@
 
   <main class="game-page">
     <div class="game-wrap">
-      <canvas id="game" width="480" height="640"></canvas>
+      <canvas id="game" width="800" height="1000"></canvas>
       <div class="game-ui" id="gameUi">
         <div class="game-title">🕷️ 蛛丝打怪兽</div>
-        <p class="game-desc">
-          移动：← → 或 A / D，也可以用鼠标/手指拖动<br />
-          发射：空格键，或按住鼠标 / 手指<br />
-          用蛛丝打落怪兽，别让它们溜走！
+        <p class="game-desc" id="gameDesc">
+          移动：W A S D 或方向键，鼠标 / 手指拖动（全屏移动）<br />
+          发射：空格 / 按住鼠标或手指（朝瞄准方向发射）<br />
+          ⚡ 大招：按 <b>E</b> 或点右下角按钮（全屏蛛丝包裹所有怪物）<br />
+          每得 60 分攒一个能量 ⚡（最多 2 个）
         </p>
-        <button class="btn btn-primary" id="startBtn">开始游戏</button>
+        <div class="mode-row">
+          <button class="btn btn-primary" id="btnLevel">🎯 关卡模式</button>
+          <button class="btn btn-ghost" id="btnInfinite">♾️ 无限模式</button>
+        </div>
       </div>
+      <button class="ult-btn hidden" id="ultBtn">⚡ 大招</button>
     </div>
   </main>
 
