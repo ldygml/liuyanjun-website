@@ -133,6 +133,7 @@
     <h1>个人网站 <span>后台管理</span></h1>
     <div class="actions">
       <span id="status"></span>
+      <span id="dirty-badge" style="display:none;color:#c92f2f;font-size:13px;font-weight:700;">⚠ 有未保存修改，记得保存或发布</span>
       <button class="btn" id="btn-export">导出 JSON 备份</button>
       <button class="btn primary" id="btn-save">保存到网站</button>
     </div>
@@ -298,6 +299,22 @@
 
       var data = JSON.parse(JSON.stringify(SITE));
       var fileHandle = null;
+
+      /* ---------- 未保存修改提醒 ---------- */
+      var dirty = false;
+      var dirtyBadge = document.getElementById('dirty-badge');
+      function markDirty() {
+        if (!dirty) {
+          dirty = true;
+          if (dirtyBadge) dirtyBadge.style.display = 'inline';
+        }
+      }
+      function clearDirty() {
+        dirty = false;
+        if (dirtyBadge) dirtyBadge.style.display = 'none';
+      }
+      document.addEventListener('input', markDirty, true);
+      document.addEventListener('change', markDirty, true);
 
       /* ---------- 工具函数 ---------- */
       function getPath(obj, path) {
@@ -565,6 +582,7 @@
           await w.write(text);
           await w.close();
           setStatus('已保存 ✓ 刷新前台页面即可生效', '#1d7a3f');
+          clearDirty();
         } catch (e) {
           if (e && e.name === 'AbortError') return;
           downloadText(text, 'content.js');
@@ -608,6 +626,7 @@
           if (j.ok) {
             remoteStatus.textContent = '已发布 ✓ 约 1 分钟后线上生效';
             remoteStatus.style.color = '#1d7a3f';
+            clearDirty();
           } else {
             remoteStatus.textContent = '发布失败: ' + (j.error || r.status);
             remoteStatus.style.color = '#c92f2f';
@@ -678,6 +697,7 @@
           if (putRes.ok) {
             ghStatus.textContent = '已发布 ✓ 约 1 分钟后线上生效';
             ghStatus.style.color = '#1d7a3f';
+            clearDirty();
           } else {
             ghStatus.textContent = '发布失败: ' + (putJson.message || putRes.status);
             ghStatus.style.color = '#c92f2f';
