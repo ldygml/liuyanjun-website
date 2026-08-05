@@ -1129,6 +1129,14 @@ section[id] { scroll-margin-top: calc(var(--header-h) + 12px); }
 .lightbox-nav.prev { left: 20px; }
 .lightbox-nav.next { right: 20px; }
 
+/* ---------- 点击蛛丝特效 ---------- */
+#webFx {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  pointer-events: none;
+}
+
 /* ---------- 文章页 ---------- */
 .article-page {
   max-width: 780px;
