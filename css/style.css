@@ -1182,9 +1182,13 @@ section[id] { scroll-margin-top: calc(var(--header-h) + 12px); }
   z-index: 250;
   border: none;
   background: none;
-  cursor: pointer;
+  cursor: grab;
   padding: 0;
   animation: mascot-bob 3.2s ease-in-out infinite;
+}
+.mascot.dragging {
+  animation: none;
+  cursor: grabbing;
 }
 @keyframes mascot-bob {
   0%, 100% { transform: translateY(0); }
