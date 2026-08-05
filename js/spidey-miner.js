@@ -15,7 +15,8 @@
   let level = 1;
   let score = 0;
   let best = 0;
-  let timeLeft = 60;
+  const TIME_LIMIT = 90;
+  let timeLeft = TIME_LIMIT;
   const player = { x: W / 2, y: 42 };
   const hook = { angle: 0, dir: 1, state: 'swing', len: 46, x: W / 2, y: 42, target: null, cd: 0 };
   let objects = [];
@@ -25,7 +26,7 @@
   let raf = null;
   let last = 0;
 
-  const TARGETS = [150, 350, 650];
+  const TARGETS = [120, 260, 480];
   const TYPES = [
     { e: '🪙', v: 10, w: 1, r: 20, p: 0.4 },
     { e: '💰', v: 30, w: 2, r: 24, p: 0.2 },
@@ -92,7 +93,7 @@
     state = 'playing';
     level = 1;
     score = 0;
-    timeLeft = 60;
+    timeLeft = TIME_LIMIT;
     resetHook();
     spawnObjects();
     ui.classList.add('hidden');
@@ -102,7 +103,7 @@
 
   const nextLevel = () => {
     level++;
-    timeLeft = 60;
+    timeLeft = TIME_LIMIT;
     resetHook();
     spawnObjects();
     ui.classList.add('hidden');
@@ -379,6 +380,8 @@
       };
     },
     launch: launch,
+    setTime: function (t) { timeLeft = t; },
+    getTime: function () { return timeLeft; },
     forceGrab: function () {
       if (objects.length) {
         hook.target = objects[0];
