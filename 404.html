@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>404 · 999gml</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(ellipse at 50% 120%, #2b5baa 0%, #14161a 62%);
+      color: #f7f7f2;
+      font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+      overflow: hidden;
+      text-align: center;
+    }
+    .scene { position: relative; padding: 40px 24px; }
+    .web {
+      position: fixed; inset: 0;
+      background:
+        linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px),
+        radial-gradient(circle at 50% 0%, transparent 0 40%, rgba(226,54,54,.12) 41% 100%);
+      background-size: 44px 44px, 44px 44px, 100% 100%;
+      mask-image: radial-gradient(ellipse at 50% 30%, #000 30%, transparent 75%);
+      -webkit-mask-image: radial-gradient(ellipse at 50% 30%, #000 30%, transparent 75%);
+    }
+    .spider {
+      position: fixed;
+      left: 50%;
+      top: -80px;
+      font-size: 44px;
+      transform-origin: 50% 0;
+      animation: drop 2.6s cubic-bezier(.2,.8,.2,1) forwards, swing 1.6s ease-in-out 2.6s infinite;
+    }
+    @keyframes drop { to { top: 150px; } }
+    @keyframes swing {
+      0%, 100% { transform: translateX(-50%) rotate(-12deg); }
+      50% { transform: translateX(-50%) rotate(12deg); }
+    }
+    .big { font-size: clamp(90px, 22vw, 180px); font-weight: 900; line-height: 1; color: #e23636; text-shadow: 0 8px 40px rgba(226,54,54,.45); }
+    p { margin: 18px 0 30px; color: rgba(247,247,242,.82); font-size: 16px; }
+    a {
+      display: inline-block;
+      padding: 12px 30px;
+      border-radius: 999px;
+      background: #e23636;
+      color: #fff;
+      text-decoration: none;
+      font-weight: 700;
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+    a:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(226,54,54,.4); }
+  </style>
+</head>
+<body>
+  <div class="web" aria-hidden="true"></div>
+  <div class="scene">
+    <div class="spider" aria-hidden="true">🕷️</div>
+    <div class="big">404</div>
+    <p>这里什么都没有……蜘蛛侠好像荡错方向了？</p>
+    <a href="./index.html">🕸️ 荡回首页</a>
+  </div>
+</body>
+</html>
