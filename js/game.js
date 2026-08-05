@@ -38,18 +38,19 @@
   let pointerX = null;
   let pointerY = null;
   let pointerDown = false;
+  let isTouch = false;
   let aimX = 0;
   let aimY = -1;
   let raf = null;
   let last = 0;
 
   const TYPES = [
-    { e: '👾', name: '普通', hp: 1, size: 26, speed: 85, move: 'straight', score: 10 },
-    { e: '🐙', name: '波浪', hp: 1, size: 26, speed: 80, move: 'sine', score: 10 },
-    { e: '👹', name: '追踪', hp: 2, size: 30, speed: 90, move: 'chase', score: 20 },
-    { e: '💀', name: '快速', hp: 1, size: 24, speed: 165, move: 'straight', score: 15 },
-    { e: '🦇', name: '闪避', hp: 1, size: 24, speed: 100, move: 'zigzag', score: 15 },
-    { e: '👻', name: '飘忽', hp: 1, size: 26, speed: 95, move: 'diagonal', score: 15 }
+    { e: '👾', name: '普通', hp: 1, size: 40, speed: 85, move: 'straight', score: 10 },
+    { e: '🐙', name: '波浪', hp: 1, size: 40, speed: 80, move: 'sine', score: 10 },
+    { e: '👹', name: '追踪', hp: 2, size: 46, speed: 90, move: 'chase', score: 20 },
+    { e: '💀', name: '快速', hp: 1, size: 36, speed: 165, move: 'straight', score: 15 },
+    { e: '🦇', name: '闪避', hp: 1, size: 38, speed: 100, move: 'zigzag', score: 15 },
+    { e: '👻', name: '飘忽', hp: 1, size: 40, speed: 95, move: 'diagonal', score: 15 }
   ];
 
   const LEVEL_TARGETS = [15, 20, 26, 32, 40];
@@ -102,24 +103,13 @@
       y: ((clientY - r.top) / r.height) * H
     };
   };
-  canvas.addEventListener('mousemove', (e) => {
-    const p = toGame(e.clientX, e.clientY);
-    pointerX = p.x;
-    pointerY = p.y;
-  });
-  canvas.addEventListener('mousedown', (e) => {
-    const p = toGame(e.clientX, e.clientY);
-    pointerX = p.x;
-    pointerY = p.y;
-    pointerDown = true;
-  });
-  window.addEventListener('mouseup', () => { pointerDown = false; });
   canvas.addEventListener('touchstart', (e) => {
     e.preventDefault();
     const p = toGame(e.touches[0].clientX, e.touches[0].clientY);
     pointerX = p.x;
     pointerY = p.y;
     pointerDown = true;
+    isTouch = true;
   }, { passive: false });
   canvas.addEventListener('touchmove', (e) => {
     e.preventDefault();
@@ -127,7 +117,7 @@
     pointerX = p.x;
     pointerY = p.y;
   }, { passive: false });
-  canvas.addEventListener('touchend', () => { pointerDown = false; });
+  canvas.addEventListener('touchend', () => { pointerDown = false; isTouch = false; });
 
   /* ---- 流程 ---- */
   const setUI = (title, html, showModeBtns) => {
@@ -295,7 +285,7 @@
       player.x += (dx / l) * 380 * dt;
       player.y += (dy / l) * 380 * dt;
     }
-    if (pointerX !== null) {
+    if (isTouch && pointerX !== null) {
       player.x += (pointerX - player.x) * Math.min(1, dt * 9);
       player.y += (pointerY - player.y) * Math.min(1, dt * 9);
       const ax = pointerX - player.x;
@@ -331,7 +321,7 @@
         const e = enemies[j];
         const dx2 = w.x - e.x;
         const dy2 = w.y - e.y;
-        if (dx2 * dx2 + dy2 * dy2 < 30 * 30) {
+        if (dx2 * dx2 + dy2 * dy2 < 40 * 40) {
           webs.splice(i, 1);
           e.hp--;
           if (e.hp <= 0) {
@@ -459,21 +449,21 @@
     ctx.rotate(Math.atan2(aimY, aimX) + Math.PI / 2);
     ctx.fillStyle = '#2b5baa';
     ctx.beginPath();
-    ctx.ellipse(0, 20, 15, 19, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, 14, 11, 14, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = '#e23636';
     ctx.beginPath();
-    ctx.arc(0, -14, 19, 0, Math.PI * 2);
+    ctx.arc(0, -10, 14, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = '#ffffff';
     ctx.strokeStyle = '#1f2933';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.ellipse(-8, -17, 7, 9, -0.25, 0, Math.PI * 2);
+    ctx.ellipse(-5.5, -12, 5.5, 7, -0.25, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
     ctx.beginPath();
-    ctx.ellipse(8, -17, 7, 9, 0.25, 0, Math.PI * 2);
+    ctx.ellipse(5.5, -12, 5.5, 7, 0.25, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
     ctx.restore();
