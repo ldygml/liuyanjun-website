@@ -647,8 +647,75 @@
       if (!webRaf) webRaf = requestAnimationFrame(webLoop);
     };
 
+    /* 蜘蛛侠贴纸彩蛋：快速连点 7 下触发 */
+    const showEasterEgg = (x, y) => {
+      const egg = document.createElement('div');
+      egg.className = 'spidey-egg';
+      egg.innerHTML =
+        '<svg viewBox="0 0 120 120" width="150" height="150" aria-hidden="true">' +
+          '<circle cx="60" cy="60" r="56" fill="#e23636" stroke="#9e1515" stroke-width="4"/>' +
+          '<circle cx="60" cy="60" r="44" fill="#ffffff" opacity="0.15"/>' +
+          '<circle cx="60" cy="56" r="9" fill="#ffffff"/>' +
+          '<circle cx="60" cy="73" r="7" fill="#ffffff"/>' +
+          '<path d="M60 47v-11M56 44l-9 7M64 44l9 7M53 49l-13 3M67 49l13 3M50 56l-12 -2M70 56l12 -2M49 64l-11 -5M71 64l11 -5M51 72l-10 -2M69 72l10 -2M55 80l-7 7M65 80l7 7" stroke="#ffffff" stroke-width="3" fill="none" stroke-linecap="round"/>' +
+        '</svg>' +
+        '<span class="egg-text">THWIP!</span>';
+      document.body.appendChild(egg);
+      egg.style.left = Math.max(20, Math.min(window.innerWidth - 170, x - 75)) + 'px';
+      egg.style.top = Math.max(20, Math.min(window.innerHeight - 190, y - 75)) + 'px';
+      setTimeout(() => egg.remove(), 2700);
+      for (let i = 0; i < 8; i++) {
+        webs.push({
+          x: x,
+          y: y,
+          start: performance.now(),
+          maxLife: 750,
+          maxR: 55 + Math.random() * 45,
+          rot: (Math.PI * 2 * i) / 8
+        });
+      }
+      if (!webRaf) webRaf = requestAnimationFrame(webLoop);
+    };
+
+    const clickTimes = [];
+    let eggCooldown = false;
     document.addEventListener('click', (e) => {
       spawnWeb(e.clientX, e.clientY);
+      const now = performance.now();
+      clickTimes.push(now);
+      while (clickTimes.length && now - clickTimes[0] > 2000) clickTimes.shift();
+      if (clickTimes.length >= 7 && !eggCooldown) {
+        eggCooldown = true;
+        clickTimes.length = 0;
+        showEasterEgg(e.clientX, e.clientY);
+        setTimeout(() => { eggCooldown = false; }, 4000);
+      }
+    });
+
+    /* 蛛丝拖尾：鼠标移动沿途生成快速消散的小蛛网 */
+    let lastTrailX = null;
+    let lastTrailY = null;
+    document.addEventListener('mousemove', (e) => {
+      if (lastTrailX === null) {
+        lastTrailX = e.clientX;
+        lastTrailY = e.clientY;
+        return;
+      }
+      const dx = e.clientX - lastTrailX;
+      const dy = e.clientY - lastTrailY;
+      if (dx * dx + dy * dy > 360) {
+        lastTrailX = e.clientX;
+        lastTrailY = e.clientY;
+        webs.push({
+          x: e.clientX,
+          y: e.clientY,
+          start: performance.now(),
+          maxLife: 400,
+          maxR: 18 + Math.random() * 10,
+          rot: Math.random() * Math.PI * 2
+        });
+        if (!webRaf) webRaf = requestAnimationFrame(webLoop);
+      }
     });
   }
 
