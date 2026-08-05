@@ -619,10 +619,10 @@
 
     const webLoop = () => {
       wctx.clearRect(0, 0, webCanvas.width, webCanvas.height);
-      webs = webs.filter((w) => w.life < w.maxLife);
+      const now = performance.now();
+      webs = webs.filter((w) => now - w.start < w.maxLife);
       webs.forEach((w) => {
-        w.life += 16;
-        const t = w.life / w.maxLife;
+        const t = (now - w.start) / w.maxLife;
         const r = w.maxR * (0.2 + 0.8 * t);
         const alpha = Math.max(0, 0.9 * (1 - t * t));
         drawWeb(w.x, w.y, r, alpha, w.rot);
@@ -639,7 +639,7 @@
       webs.push({
         x: x,
         y: y,
-        life: 0,
+        start: performance.now(),
         maxLife: 650,
         maxR: 58 + Math.random() * 26,
         rot: Math.random() * Math.PI * 2
