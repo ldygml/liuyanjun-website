@@ -651,6 +651,53 @@ section[id] { scroll-margin-top: calc(var(--header-h) + 12px); }
   color: var(--text-soft);
 }
 
+/* ---------- 个人荣誉 ---------- */
+.honors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 18px;
+}
+.honor-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.4s var(--ease), box-shadow 0.4s var(--ease),
+    border-color 0.3s;
+}
+.honor-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-md);
+  border-color: rgba(var(--accent-rgb), 0.3);
+}
+.honor-icon {
+  font-size: 1.8rem;
+  line-height: 1;
+  display: block;
+  margin-bottom: 12px;
+}
+.honor-date {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-soft);
+  padding: 2px 10px;
+  border-radius: 999px;
+  margin-bottom: 10px;
+}
+.honor-card h3 {
+  font-size: 1.05rem;
+  margin-bottom: 6px;
+  line-height: 1.5;
+}
+.honor-card p {
+  color: var(--text-soft);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
 /* ---------- 生活瞬间（相册） ---------- */
 .gallery-grid {
   display: grid;
