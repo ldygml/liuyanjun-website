@@ -17,6 +17,22 @@
   const chatName = document.getElementById('chatName');
   if (chatName) chatName.textContent = name;
 
+  /* 网站资料摘要：让小蛛“读懂”网站，回答访客关于网站的问题 */
+  const buildSiteInfo = () => {
+    const s = SITE;
+    const parts = [];
+    parts.push('网站主人：' + s.name + '。' + ((s.about && s.about.paragraphs) ? s.about.paragraphs.join('') : ''));
+    parts.push('经历：' + (s.journey || []).map((j) => j.period + ' ' + j.title).join('；'));
+    parts.push('荣誉：' + (s.honors || []).map((h) => h.title + '(' + (h.date || '') + ')').join('；'));
+    parts.push('技能：' + (s.skills || []).map((k) => k.name).join('、'));
+    parts.push('作品：' + (s.works || []).map((w) => w.category + '《' + w.title + '》' + (w.desc || '')).join('；'));
+    parts.push('文章：' + (s.posts || []).map((p) => '《' + p.title + '》').join('、'));
+    const emails = (s.contact && s.contact.emails || []).map((e) => e.address).join('、');
+    parts.push('联系方式：' + (emails ? '邮箱 ' + emails + '；' : '') + (s.contact && s.contact.github ? 'GitHub ' + s.contact.github.handle : ''));
+    return parts.join('\n');
+  };
+  const siteInfo = buildSiteInfo();
+
   const FALLBACKS = [
     '嘿嘿，我是' + name + '🕷️ 主人给我做了个可爱的小窝～',
     '想了解主人的作品吗？点上面的“个人作品”就能看到啦！',
@@ -91,7 +107,7 @@
         const r = await fetch(apiUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ messages: history.slice(-10), model: cfg.model || '' })
+          body: JSON.stringify({ messages: history.slice(-10), model: cfg.model || '', siteInfo: siteInfo })
         });
         const j = await r.json();
         reply = j && j.reply ? j.reply : fallbackReply(text);
