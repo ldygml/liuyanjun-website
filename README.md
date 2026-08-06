@@ -62,3 +62,6 @@ python -m http.server 8000
 3. 等待约 1 分钟，GitHub Pages 自动构建完成，刷新线上页面即可看到更新。
 
 注意：`admin.html` 和 `更新线上.bat` 只在你本地使用，不会上传到线上。
+
+
+<!-- deploy heartbeat 2026-08-06T14:00Z -->
