@@ -437,7 +437,10 @@
                 sel.appendChild(op);
               });
               sel.value = item[f.path] || '';
-              sel.addEventListener('change', function () { item[f.path] = sel.value; });
+              sel.addEventListener('change', function () {
+                item[f.path] = sel.value;
+                if (typeof rerender === 'function') rerender();
+              });
               card.appendChild(sel);
             } else if (f.type === 'commaList') {
               var ci = el('input');
