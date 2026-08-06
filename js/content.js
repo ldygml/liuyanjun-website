@@ -246,7 +246,8 @@ const SITE = {
       "tags": [
         "C",
         "CMake",
-        "数据结构"
+        "数据结构",
+        "Linux"
       ],
       "source": "https://github.com/ldygml/flight-booking-system",
       "demo": ""
