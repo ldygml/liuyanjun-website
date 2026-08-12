@@ -14,7 +14,7 @@ const SITE = {
     "吉他手",
     "喷火爱好者",
     "红魔太子",
-    "小美女"
+    "Spiderman"
   ],
   "sections": {
     "about": {
@@ -340,8 +340,8 @@ const SITE = {
         "address": "baonamne74@gmail.com"
       },
       {
-        "label": "Gmail",
-        "address": "999ffgml@gmail.com"
+        "label": "学生邮箱",
+        "address": "yanjunliu@stu.scu.edu.cn"
       }
     ],
     "github": {
