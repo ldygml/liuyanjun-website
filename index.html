@@ -65,21 +65,22 @@
       </button>
       <nav class="site-nav" id="siteNav" aria-label="主导航">
         <ul>
-          <li><a href="#about" class="nav-link active">关于</a></li>
-          <li><a href="#journey" class="nav-link">经历</a></li>
-          <li><a href="#honors" class="nav-link">荣誉</a></li>
-          <li><a href="#skills" class="nav-link">技能</a></li>
-          <li><a href="#projects" class="nav-link">作品</a></li>
-          <li><a href="games.html" class="nav-link">游戏</a></li>
-          <li><a href="#blog" class="nav-link">文章</a></li>
-          <li><a href="#contact" class="nav-link">联系</a></li>
-          <li><a href="#guestbook" class="nav-link">留言</a></li>
+          <li><a href="#about" class="nav-link active" data-i18n="nav.about">关于</a></li>
+          <li><a href="#journey" class="nav-link" data-i18n="nav.journey">经历</a></li>
+          <li><a href="#honors" class="nav-link" data-i18n="nav.honors">荣誉</a></li>
+          <li><a href="#skills" class="nav-link" data-i18n="nav.skills">技能</a></li>
+          <li><a href="#projects" class="nav-link" data-i18n="nav.projects">作品</a></li>
+          <li><a href="games.html" class="nav-link" data-i18n="nav.games">游戏</a></li>
+          <li><a href="#blog" class="nav-link" data-i18n="nav.blog">文章</a></li>
+          <li><a href="#contact" class="nav-link" data-i18n="nav.contact">联系</a></li>
+          <li><a href="#guestbook" class="nav-link" data-i18n="nav.guestbook">留言</a></li>
         </ul>
       </nav>
       <button class="search-btn" id="searchBtn" aria-label="搜索" title="搜索（Ctrl+K）">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
       </button>
       <button class="theme-btn" id="themeBtn" aria-label="切换深色模式" title="切换深色/浅色模式">🌙</button>
+      <button class="theme-btn" id="langBtn" aria-label="切换语言" title="中 / EN">🌐</button>
     </div>
   </header>
 
@@ -91,17 +92,17 @@
       <canvas id="particles" aria-hidden="true"></canvas>
       <div class="container hero-content">
         <p class="hero-greeting reveal" id="hero-greeting">你好，我是 999gml</p>
-        <h1 class="hero-name reveal" id="hero-name">用代码与热爱，探索更大的世界。</h1>
+        <h1 class="hero-name reveal" id="hero-name" data-i18n="heroName">用代码与热爱，探索更大的世界。</h1>
         <p class="hero-sub reveal" id="hero-sub">Remember, with great power comes great responsibility.</p>
         <div class="hero-roles reveal" aria-live="polite">
           <span class="typed" id="typewriter"></span><span class="type-caret">|</span>
         </div>
         <div class="hero-actions reveal">
-          <a href="#projects" class="btn btn-primary">查看作品</a>
-          <a href="#contact" class="btn btn-ghost">联系我</a>
+          <a href="#projects" class="btn btn-primary" data-i18n="viewWorks">查看作品</a>
+          <a href="#contact" class="btn btn-ghost" data-i18n="contactMe">联系我</a>
         </div>
       </div>
-      <a href="#about" class="scroll-hint" aria-label="向下滚动">
+      <a href="#about" class="scroll-hint" aria-label="向下滚动" data-i18n-aria="scrollHint">
         <span class="mouse"><span class="wheel"></span></span>
       </a>
     </section>
@@ -247,13 +248,13 @@
 
   <!-- 站内搜索弹窗 -->
   <div class="search-modal" id="searchModal" aria-hidden="true">
-    <div class="search-box" role="dialog" aria-label="站内搜索">
+    <div class="search-box" role="dialog" aria-label="站内搜索" data-i18n-aria="searchModal">
       <div class="search-input-wrap">
-        <input type="text" id="searchInput" placeholder="搜索作品、文章…（Ctrl+K）" autocomplete="off" />
+        <input type="text" id="searchInput" placeholder="搜索作品、文章…（Ctrl+K）" autocomplete="off" data-i18n-placeholder="searchPlaceholder" />
         <button class="search-close" id="searchClose" aria-label="关闭">×</button>
       </div>
       <div class="search-results" id="searchResults"></div>
-      <p class="search-hint">Enter 打开第一条结果 · Esc 关闭</p>
+      <p class="search-hint" data-i18n="searchHint">Enter 打开第一条结果 · Esc 关闭</p>
     </div>
   </div>
 
@@ -309,13 +310,13 @@
   <!-- ================= 页脚 ================= -->
   <footer class="site-footer">
     <div class="container footer-wrap">
-      <p>© <span id="year">2026</span> <span id="footer-name">999gml</span> · 用 ❤ 和 ☕ 构建</p>
+      <p>© <span id="year">2026</span> <span id="footer-name">999gml</span> · <span data-i18n="builtWith">用 ❤ 和 ☕ 构建</span></p>
       <p class="site-stats">
-        <span id="busuanzi_container_site_pv">本站访问量 <span id="busuanzi_value_site_pv"></span> 次</span>
+        <span id="busuanzi_container_site_pv" data-i18n-html="pv">本站访问量 <span id="busuanzi_value_site_pv"></span> 次</span>
         ·
-        <span id="busuanzi_container_site_uv">访客 <span id="busuanzi_value_site_uv"></span> 人</span>
+        <span id="busuanzi_container_site_uv" data-i18n-html="uv">访客 <span id="busuanzi_value_site_uv"></span> 人</span>
       </p>
-      <button class="to-top" id="toTop" aria-label="回到顶部">↑</button>
+      <button class="to-top" id="toTop" aria-label="回到顶部" data-i18n-aria="toTop">↑</button>
     </div>
   </footer>
 
@@ -340,7 +341,10 @@
   <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 
   <script src="js/content.js"></script>
+  <script src="js/content-en.js"></script>
+  <script src="js/i18n.js"></script>
   <script src="js/main.js"></script>
   <script src="js/chat.js"></script>
+  <script src="js/giscus-theme.js"></script>
 </body>
 </html>
