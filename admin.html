@@ -195,7 +195,97 @@
         <span id="remote-status"></span>
       </div>
     </section>
-    <div id="app"></div>
+      <!-- ============ 聊天智能体设置（小蛛） ============ -->
+  <section id="chatAgentCard" style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px;margin:16px 0;max-width:720px;">
+    <h2 style="margin:0 0 8px;font-size:18px;">🤖 聊天智能体设置（小蛛）</h2>
+    <p style="margin:0 0 12px;color:#6b7280;font-size:13px;">千问 API key 保存在私有仓库，不会出现在公开网站上。改完点"保存配置"，约 30 秒后生效。</p>
+    <div style="margin-bottom:10px;">
+      <label style="display:block;font-size:13px;margin-bottom:4px;">千问 API Key</label>
+      <input type="password" id="cfgKey" placeholder="sk-ws-..." autocomplete="off" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:8px;box-sizing:border-box;" />
+    </div>
+    <div style="margin-bottom:10px;">
+      <label style="display:block;font-size:13px;margin-bottom:4px;">模型名</label>
+      <input id="cfgModel" value="qwen-plus" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:8px;box-sizing:border-box;" />
+    </div>
+    <div style="margin-bottom:10px;">
+      <label style="display:block;font-size:13px;margin-bottom:4px;">人设提示词</label>
+      <textarea id="cfgPersona" rows="4" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:8px;box-sizing:border-box;"></textarea>
+    </div>
+    <div style="margin-bottom:10px;">
+      <label style="display:block;font-size:13px;margin-bottom:4px;">后台密码</label>
+      <input type="password" id="cfgPass" placeholder="与远程发布相同的后台密码" autocomplete="off" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:8px;box-sizing:border-box;" />
+    </div>
+    <div>
+      <button type="button" id="cfgLoad" style="padding:8px 14px;border:1px solid #d1d5db;border-radius:8px;background:#f9fafb;cursor:pointer;">读取当前配置</button>
+      <button type="button" id="cfgSave" style="padding:8px 14px;border:none;border-radius:8px;background:#16a34a;color:#fff;cursor:pointer;">保存配置</button>
+      <button type="button" id="cfgTest" style="padding:8px 14px;border:1px solid #d1d5db;border-radius:8px;background:#f9fafb;cursor:pointer;">测试小蛛</button>
+    </div>
+    <div id="cfgMsg" style="margin-top:8px;font-size:13px;min-height:18px;"></div>
+  </section>
+  <script>
+    (function () {
+      var chatApi = (window.SITE && SITE.chat && SITE.chat.apiUrl) || 'https://website-admin-api.vercel.app/api/chat';
+      var cfgApi = chatApi.replace(/\/chat$/, '/config');
+      var keyEl = document.getElementById('cfgKey');
+      var modelEl = document.getElementById('cfgModel');
+      var personaEl = document.getElementById('cfgPersona');
+      var passEl = document.getElementById('cfgPass');
+      var msgEl = document.getElementById('cfgMsg');
+      function show(t, ok) { msgEl.textContent = t; msgEl.style.color = ok ? '#16a34a' : '#dc2626'; }
+      function post(body) {
+        return fetch(cfgApi, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        }).then(function (r) {
+          return r.json().then(function (j) { return { ok: r.ok, j: j }; });
+        }).catch(function () { return { ok: false, j: { error: '无法连接配置接口' } }; });
+      }
+      document.getElementById('cfgLoad').addEventListener('click', function () {
+        var pass = passEl.value.trim();
+        if (!pass) { show('请先输入后台密码', false); return; }
+        post({ action: 'get', password: pass }).then(function (res) {
+          if (!res.ok) { show((res.j && res.j.error) || '读取失败', false); return; }
+          modelEl.value = res.j.qwenModel || 'qwen-plus';
+          personaEl.value = res.j.persona || '';
+          keyEl.placeholder = res.j.configured ? ('已配置（' + (res.j.keyMasked || '') + '），留空则不修改') : '尚未配置 key';
+          show('已读取当前配置', true);
+        });
+      });
+      document.getElementById('cfgSave').addEventListener('click', function () {
+        var pass = passEl.value.trim();
+        if (!pass) { show('请先输入后台密码', false); return; }
+        var body = {
+          action: 'save',
+          password: pass,
+          qwenModel: modelEl.value.trim(),
+          persona: personaEl.value.trim()
+        };
+        var k = keyEl.value.trim();
+        if (k) body.qwenApiKey = k;
+        post(body).then(function (res) {
+          show(res.ok ? '保存成功，约 30 秒后生效 🕷️' : ((res.j && res.j.error) || '保存失败'), res.ok);
+          if (res.ok) keyEl.value = '';
+        });
+      });
+      document.getElementById('cfgTest').addEventListener('click', function () {
+        show('小蛛思考中…', true);
+        fetch(chatApi, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messages: [{ role: 'user', content: '你好小蛛，简单介绍一下你自己' }],
+            siteInfo: ''
+          })
+        }).then(function (r) { return r.json(); })
+          .then(function (j) { show(j.reply ? ('测试回复：' + j.reply) : ((j.error || '无回复')), !!j.reply); })
+          .catch(function () { show('测试失败（网络或接口问题）', false); });
+      });
+    })();
+  </script>
+
+
+<div id="app"></div>
   </main>
 
   <script src="js/content.js"></script>
@@ -833,94 +923,5 @@
       setStatus('已加载当前内容');
     })();
   </script>
-  <!-- ============ 聊天智能体设置（小蛛） ============ -->
-  <section id="chatAgentCard" style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px;margin:16px 0;max-width:720px;">
-    <h2 style="margin:0 0 8px;font-size:18px;">🤖 聊天智能体设置（小蛛）</h2>
-    <p style="margin:0 0 12px;color:#6b7280;font-size:13px;">千问 API key 保存在私有仓库，不会出现在公开网站上。改完点"保存配置"，约 30 秒后生效。</p>
-    <div style="margin-bottom:10px;">
-      <label style="display:block;font-size:13px;margin-bottom:4px;">千问 API Key</label>
-      <input type="password" id="cfgKey" placeholder="sk-ws-..." autocomplete="off" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:8px;box-sizing:border-box;" />
-    </div>
-    <div style="margin-bottom:10px;">
-      <label style="display:block;font-size:13px;margin-bottom:4px;">模型名</label>
-      <input id="cfgModel" value="qwen-plus" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:8px;box-sizing:border-box;" />
-    </div>
-    <div style="margin-bottom:10px;">
-      <label style="display:block;font-size:13px;margin-bottom:4px;">人设提示词</label>
-      <textarea id="cfgPersona" rows="4" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:8px;box-sizing:border-box;"></textarea>
-    </div>
-    <div style="margin-bottom:10px;">
-      <label style="display:block;font-size:13px;margin-bottom:4px;">后台密码</label>
-      <input type="password" id="cfgPass" placeholder="与远程发布相同的后台密码" autocomplete="off" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:8px;box-sizing:border-box;" />
-    </div>
-    <div>
-      <button type="button" id="cfgLoad" style="padding:8px 14px;border:1px solid #d1d5db;border-radius:8px;background:#f9fafb;cursor:pointer;">读取当前配置</button>
-      <button type="button" id="cfgSave" style="padding:8px 14px;border:none;border-radius:8px;background:#16a34a;color:#fff;cursor:pointer;">保存配置</button>
-      <button type="button" id="cfgTest" style="padding:8px 14px;border:1px solid #d1d5db;border-radius:8px;background:#f9fafb;cursor:pointer;">测试小蛛</button>
-    </div>
-    <div id="cfgMsg" style="margin-top:8px;font-size:13px;min-height:18px;"></div>
-  </section>
-  <script>
-    (function () {
-      var chatApi = (window.SITE && SITE.chat && SITE.chat.apiUrl) || 'https://website-admin-api.vercel.app/api/chat';
-      var cfgApi = chatApi.replace(/\/chat$/, '/config');
-      var keyEl = document.getElementById('cfgKey');
-      var modelEl = document.getElementById('cfgModel');
-      var personaEl = document.getElementById('cfgPersona');
-      var passEl = document.getElementById('cfgPass');
-      var msgEl = document.getElementById('cfgMsg');
-      function show(t, ok) { msgEl.textContent = t; msgEl.style.color = ok ? '#16a34a' : '#dc2626'; }
-      function post(body) {
-        return fetch(cfgApi, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body)
-        }).then(function (r) {
-          return r.json().then(function (j) { return { ok: r.ok, j: j }; });
-        }).catch(function () { return { ok: false, j: { error: '无法连接配置接口' } }; });
-      }
-      document.getElementById('cfgLoad').addEventListener('click', function () {
-        var pass = passEl.value.trim();
-        if (!pass) { show('请先输入后台密码', false); return; }
-        post({ action: 'get', password: pass }).then(function (res) {
-          if (!res.ok) { show((res.j && res.j.error) || '读取失败', false); return; }
-          modelEl.value = res.j.qwenModel || 'qwen-plus';
-          personaEl.value = res.j.persona || '';
-          keyEl.placeholder = res.j.configured ? ('已配置（' + (res.j.keyMasked || '') + '），留空则不修改') : '尚未配置 key';
-          show('已读取当前配置', true);
-        });
-      });
-      document.getElementById('cfgSave').addEventListener('click', function () {
-        var pass = passEl.value.trim();
-        if (!pass) { show('请先输入后台密码', false); return; }
-        var body = {
-          action: 'save',
-          password: pass,
-          qwenModel: modelEl.value.trim(),
-          persona: personaEl.value.trim()
-        };
-        var k = keyEl.value.trim();
-        if (k) body.qwenApiKey = k;
-        post(body).then(function (res) {
-          show(res.ok ? '保存成功，约 30 秒后生效 🕷️' : ((res.j && res.j.error) || '保存失败'), res.ok);
-          if (res.ok) keyEl.value = '';
-        });
-      });
-      document.getElementById('cfgTest').addEventListener('click', function () {
-        show('小蛛思考中…', true);
-        fetch(chatApi, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            messages: [{ role: 'user', content: '你好小蛛，简单介绍一下你自己' }],
-            siteInfo: ''
-          })
-        }).then(function (r) { return r.json(); })
-          .then(function (j) { show(j.reply ? ('测试回复：' + j.reply) : ((j.error || '无回复')), !!j.reply); })
-          .catch(function () { show('测试失败（网络或接口问题）', false); });
-      });
-    })();
-  </script>
-
 </body>
 </html>
