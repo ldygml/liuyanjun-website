@@ -1579,3 +1579,6 @@ body.night .to-top { box-shadow: 0 0 14px rgba(226, 54, 54, 0.55); }
   transition: background 0.2s ease, color 0.2s ease;
 }
 .chat-copy:hover { background: #eef2ff; color: #6366f1; }
+
+/* ---------- Skills section: tools only (no percentage bars) ---------- */
+.skills-wrap-single { grid-template-columns: 1fr; }
