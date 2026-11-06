@@ -293,6 +293,44 @@ const SITE = {
       ],
       "source": "",
       "demo": "assets/works/work-1785857718814.jpg"
+    },
+    {
+      "category": "编程",
+      "title": "给她爱 · QQ 智能机器人产品页",
+      "desc": "QQ 智能机器人的公开产品展示页：真人化聊天人格、跨会话记忆、联网搜索、OCR/语音、表情媒体发送与本地管理网站，纯 HTML/CSS/JS 实现。",
+      "tags": [
+        "HTML",
+        "CSS",
+        "JavaScript",
+        "产品页"
+      ],
+      "source": "https://github.com/ldygml/qq-smart-bot-site",
+      "demo": "https://ldygml.github.io/qq-smart-bot-site/"
+    },
+    {
+      "category": "编程",
+      "title": "川渝方言导航语音识别",
+      "desc": "CCF IVC 2026 赛项三参赛项目（初赛第 14 名）：Data2Vec 2.0 + CTC，A 榜纯模型 CER 6.68%、热词修正版 6.00%，模型托管于 Hugging Face。",
+      "tags": [
+        "Python",
+        "Data2Vec 2.0",
+        "CTC",
+        "语音识别"
+      ],
+      "source": "https://github.com/ldygml/chuanyu-nav-asr",
+      "demo": "https://huggingface.co/999ffgml/chuanyu-nav-asr"
+    },
+    {
+      "category": "编程",
+      "title": "DeepSeek Harness 桌面版",
+      "desc": "把 DeepSeek Harness 做成 Windows 桌面应用：Electron 外壳 + NSIS 安装包。",
+      "tags": [
+        "TypeScript",
+        "Electron",
+        "NSIS"
+      ],
+      "source": "https://github.com/ldygml/deepseek-harness-desktop",
+      "demo": ""
     }
   ],
   "posts": [
