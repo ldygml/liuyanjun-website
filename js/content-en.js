@@ -177,6 +177,30 @@ const SITE_EN = {
       "tags": ["Photography"],
       "source": "",
       "demo": "assets/works/work-1785857718814.jpg"
+    },
+    {
+      "category": "Programming",
+      "title": "For Her: QQ Smart Bot Product Page",
+      "desc": "Public product page for a QQ smart bot: lifelike chat persona, cross-session memory, web search, OCR/voice, stickers and media, plus a local admin site. Pure HTML/CSS/JS.",
+      "tags": ["HTML", "CSS", "JavaScript", "Product page"],
+      "source": "https://github.com/ldygml/qq-smart-bot-site",
+      "demo": "https://ldygml.github.io/qq-smart-bot-site/"
+    },
+    {
+      "category": "Programming",
+      "title": "Chuanyu Dialect Navigation ASR",
+      "desc": "CCF IVC 2026 track 3 project (14th in preliminaries): Data2Vec 2.0 + CTC, CER 6.68% on the A leaderboard and 6.00% with hotword correction; models hosted on Hugging Face.",
+      "tags": ["Python", "Data2Vec 2.0", "CTC", "ASR"],
+      "source": "https://github.com/ldygml/chuanyu-nav-asr",
+      "demo": "https://huggingface.co/999ffgml/chuanyu-nav-asr"
+    },
+    {
+      "category": "Programming",
+      "title": "DeepSeek Harness Desktop",
+      "desc": "A Windows desktop edition of DeepSeek Harness: Electron shell + NSIS installer.",
+      "tags": ["TypeScript", "Electron", "NSIS"],
+      "source": "https://github.com/ldygml/deepseek-harness-desktop",
+      "demo": ""
     }
   ],
   "posts": [
